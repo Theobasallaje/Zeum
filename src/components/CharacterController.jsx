@@ -5,13 +5,12 @@ import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Vector3 } from "three";
 
-const JUMP_FORCE = 0.5;
-const MOVEMENT_SPEED = 0.1;
+const MOVEMENT_SPEED = 0.5;
 const MAX_VEL = 3;
 
 export const CharacterController = ({ position }) => {
 	const character = useRef({ position });
-	const jumpPressed = useKeyboardControls((state) => state[Controls.jump]);
+	//const jumpPressed = useKeyboardControls((state) => state[Controls.jump]);
 	const leftPressed = useKeyboardControls((state) => state[Controls.left]);
 	const rightPressed = useKeyboardControls((state) => state[Controls.right]);
 	const backPressed = useKeyboardControls((state) => state[Controls.back]);
@@ -21,9 +20,9 @@ export const CharacterController = ({ position }) => {
 		if (character.current) {
 			const impulse = { x: 0, y: 0, z: 0 };
 
-			if (jumpPressed) {
-				impulse.y += JUMP_FORCE;
-			}
+			//if (jumpPressed) {
+			//	impulse.y += JUMP_FORCE;
+			//}
 
 			const linvel = character.current?.linvel?.();
 
