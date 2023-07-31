@@ -11,40 +11,40 @@ const MAX_VEL = 3;
 export const CharacterController = ({ position }) => {
 	const character = useRef({ position });
 	//const jumpPressed = useKeyboardControls((state) => state[Controls.jump]);
-	const leftPressed = useKeyboardControls((state) => state[Controls.left]);
-	const rightPressed = useKeyboardControls((state) => state[Controls.right]);
-	const backPressed = useKeyboardControls((state) => state[Controls.back]);
-	const forwardPressed = useKeyboardControls((state) => state[Controls.forward]);
+	//const leftPressed = useKeyboardControls((state) => state[Controls.left]);
+	//const rightPressed = useKeyboardControls((state) => state[Controls.right]);
+	//const backPressed = useKeyboardControls((state) => state[Controls.back]);
+	//const forwardPressed = useKeyboardControls((state) => state[Controls.forward]);
 
-	useFrame(() => {
-		if (character.current) {
-			const impulse = { x: 0, y: 0, z: 0 };
-
-			//if (jumpPressed) {
-			//	impulse.y += JUMP_FORCE;
-			//}
-
-			const linvel = character.current?.linvel?.();
-
-			if (rightPressed && linvel?.x < MAX_VEL) {
-				impulse.x += MOVEMENT_SPEED;
-			}
-
-			if (leftPressed && linvel?.x > -MAX_VEL) {
-				impulse.x -= MOVEMENT_SPEED;
-			}
-
-			if (backPressed && linvel?.z < MAX_VEL) {
-				impulse.z += MOVEMENT_SPEED;
-			}
-
-			if (forwardPressed && linvel?.z > -MAX_VEL) {
-				impulse.z -= MOVEMENT_SPEED;
-			}
-
-			character.current.applyImpulse(impulse, true);
-		}
-	});
+	//useFrame(() => {
+	//	if (character.current) {
+	//		const impulse = { x: 0, y: 0, z: 0 };
+	//
+	//		//if (jumpPressed) {
+	//		//	impulse.y += JUMP_FORCE;
+	//		//}
+	//
+	//		const linvel = character.current?.linvel?.();
+	//
+	//		if (rightPressed && linvel?.x < MAX_VEL) {
+	//			impulse.x += MOVEMENT_SPEED;
+	//		}
+	//
+	//		if (leftPressed && linvel?.x > -MAX_VEL) {
+	//			impulse.x -= MOVEMENT_SPEED;
+	//		}
+	//
+	//		if (backPressed && linvel?.z < MAX_VEL) {
+	//			impulse.z += MOVEMENT_SPEED;
+	//		}
+	//
+	//		if (forwardPressed && linvel?.z > -MAX_VEL) {
+	//			impulse.z -= MOVEMENT_SPEED;
+	//		}
+	//
+	//		character.current.applyImpulse(impulse, true);
+	//	}
+	//});
 
 	return (
 		<group>

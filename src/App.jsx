@@ -2,7 +2,9 @@ import { Canvas } from "@react-three/fiber";
 import { Experience } from "./components/Experience";
 import { Suspense, useMemo } from "react";
 import { Physics } from "@react-three/rapier";
-import { KeyboardControls } from "@react-three/drei";
+import { KeyboardControls, controls } from "@react-three/drei";
+import { FPSControls } from "react-three-fpscontrols";
+import { StickControls } from "./components/StickControls";
 
 export const Controls = {
 	forward: "forward",
@@ -25,16 +27,14 @@ function App() {
 	);
 
 	return (
-		<KeyboardControls map={controlsMap}>
-			<Canvas shadows>
-				<color attach="background" args={["#ececec"]} />
-				<Suspense>
-					<Physics debug>
-						<Experience />
-					</Physics>
-				</Suspense>
-			</Canvas>
-		</KeyboardControls>
+		<Canvas shadows>
+			<color attach="background" args={["#ececec"]} />
+			<Suspense fallback>
+				<Physics>
+					<Experience />
+				</Physics>
+			</Suspense>
+		</Canvas>
 	);
 }
 
