@@ -143,39 +143,35 @@ function useJoystick({ enableJoystick }) {
 	}, [enableJoystick]);
 }
 const MOVEMENT_SPEED = 0.8;
-const MAX_VEL = 3;
+const MAX_VEL = 5;
 export const StickControls = ({
 	enableJoystick,
 	enableKeyboard,
 	orbitProps = {},
 	camProps = {},
-	mult = 0.1,
+	mult = 1.2,
 }) => {
 	const orbitRef = useRef();
 	const camRef = useRef();
 	const characterRef = useRef({ position: [0, 1, 0] });
 
 	const updatePlayer = useCallback(() => {
-		const controls = orbitRef.current;
+		//const controls = orbitRef.current;
 		const impulse = { x: 0, y: 0, z: 0 };
-		const angle = controls.getAzimuthalAngle();
+		//const angle = controls.getAzimuthalAngle();
 		const linvel = characterRef.current?.linvel?.();
 
 		if (lftValue && linvel?.x < MAX_VEL) {
-			const directionVector = new Vector3(-1, 0, 0).applyAxisAngle(upVector, angle);
-			impulse.addScaledVector(directionVector, MOVEMENT_SPEED);
+			impulse.x += MOVEMENT_SPEED * mult;
 		}
 		if (rgtValue && linvel?.x > -MAX_VEL) {
-			const directionVector = new Vector3(1, 0, 0).applyAxisAngle(upVector, angle);
-			impulse.addScaledVector(directionVector, MOVEMENT_SPEED);
+			impulse.x -= MOVEMENT_SPEED * mult;
 		}
 		if (fwdValue && linvel?.z < MAX_VEL) {
-			const directionVector = new Vector3(0, 0, -1).applyAxisAngle(upVector, angle);
-			impulse.addScaledVector(directionVector, MOVEMENT_SPEED);
+			impulse.z += MOVEMENT_SPEED * mult;
 		}
 		if (bkdValue && linvel?.z > -MAX_VEL) {
-			const directionVector = new Vector3(0, 0, 1).applyAxisAngle(upVector, angle);
-			impulse.addScaledVector(directionVector, MOVEMENT_SPEED);
+			impulse.z -= MOVEMENT_SPEED * mult;
 		}
 
 		characterRef.current.applyImpulse(impulse, true);
