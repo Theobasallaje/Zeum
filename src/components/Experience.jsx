@@ -1,8 +1,12 @@
 import { Cylinder } from "@react-three/drei";
 import { RigidBody, CylinderCollider } from "@react-three/rapier";
 import { StickControls } from "./StickControls";
+import { useMemo } from "react";
 
 export const Experience = () => {
+	const isTouchScreen = useMemo(() => {
+		return "maxTouchPoints" in navigator ? navigator.maxTouchPoints > 0 : false;
+	}, []);
 	return (
 		<>
 			<ambientLight intensity={1} />
@@ -23,7 +27,7 @@ export const Experience = () => {
 				orbitProps={{
 					target: [0, 2.75, 0],
 				}}
-				enableJoystick
+				enableJoystick={isTouchScreen}
 				enableKeyboard
 			/>
 		</>
