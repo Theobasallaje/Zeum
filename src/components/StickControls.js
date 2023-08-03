@@ -142,7 +142,7 @@ function useJoystick({ enableJoystick }) {
 		};
 	}, [enableJoystick]);
 }
-const MOVEMENT_SPEED = 0.8;
+const MOVEMENT_SPEED = 5;
 const MAX_VEL = 5;
 export const StickControls = ({
 	enableJoystick,
@@ -155,23 +155,43 @@ export const StickControls = ({
 	const camRef = useRef();
 	const characterRef = useRef({ position: [0, 1, 0] });
 
-	const updatePlayer = useCallback(() => {
+	const updatePlayer = useCallback((state) => {
 		//const controls = orbitRef.current;
 		const impulse = { x: 0, y: 0, z: 0 };
 		//const angle = controls.getAzimuthalAngle();
 		const linvel = characterRef.current?.linvel?.();
 
-		if (lftValue && linvel?.x < MAX_VEL) {
-			impulse.x += MOVEMENT_SPEED * mult;
+		let dirX = 0;
+		let dirZ = 0;
+
+		if (lftValue) {
+			dirX += 1;
 		}
-		if (rgtValue && linvel?.x > -MAX_VEL) {
-			impulse.x -= MOVEMENT_SPEED * mult;
+		if (rgtValue) {
+			dirX -= 1;
 		}
-		if (fwdValue && linvel?.z < MAX_VEL) {
-			impulse.z += MOVEMENT_SPEED * mult;
+		if (fwdValue) {
+			dirZ += 1;
 		}
-		if (bkdValue && linvel?.z > -MAX_VEL) {
-			impulse.z -= MOVEMENT_SPEED * mult;
+		if (bkdValue) {
+			dirZ -= 1;
+		}
+		console.log(state.clock.getDelta());
+		let force = MOVEMENT_SPEED * (state.clock.getDelta() * 2048);
+		if ((lftValue || rgtValue) && (fwdValue || bkdValue)) {
+			force /= Math.sqrt(2); // Halve the force when moving diagonally
+		}
+
+		// Apply the force to the corresponding components of impulse
+		impulse.x += dirX * force;
+		impulse.z += dirZ * force;
+
+		// Limit the magnitude of impulse
+		const currentSpeed = Math.sqrt(linvel.x ** 2 + linvel.z ** 2);
+
+		if (currentSpeed > MAX_VEL) {
+			impulse.x *= MAX_VEL / currentSpeed;
+			impulse.z *= MAX_VEL / currentSpeed;
 		}
 
 		characterRef.current.applyImpulse(impulse, true);
@@ -187,12 +207,11 @@ export const StickControls = ({
 
 		orbitRef.current.target.copy(boxPosition);
 		orbitRef.current.update();
-		// Update camera target to always look at the box's position
 		camRef.current.lookAt(boxPosition);
-	}, [characterRef, camRef]);
+	}, []);
 
-	useFrame(() => {
-		updatePlayer();
+	useFrame((state) => {
+		updatePlayer(state);
 	});
 
 	useJoystick({ enableJoystick });
