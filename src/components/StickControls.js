@@ -142,14 +142,13 @@ function useJoystick({ enableJoystick }) {
 		};
 	}, [enableJoystick]);
 }
-const MOVEMENT_SPEED = 5;
+const MOVEMENT_SPEED = 1;
 const MAX_VEL = 5;
 export const StickControls = ({
 	enableJoystick,
 	enableKeyboard,
 	orbitProps = {},
 	camProps = {},
-	mult = 1.2,
 }) => {
 	const orbitRef = useRef();
 	const camRef = useRef();
@@ -176,8 +175,8 @@ export const StickControls = ({
 		if (bkdValue) {
 			dirZ -= 1;
 		}
-		console.log(state.clock.getDelta());
-		let force = MOVEMENT_SPEED * (state.clock.getDelta() * 2048);
+
+		let force = MOVEMENT_SPEED;
 		if ((lftValue || rgtValue) && (fwdValue || bkdValue)) {
 			force /= Math.sqrt(2); // Halve the force when moving diagonally
 		}
@@ -188,10 +187,11 @@ export const StickControls = ({
 
 		// Limit the magnitude of impulse
 		const currentSpeed = Math.sqrt(linvel.x ** 2 + linvel.z ** 2);
+		const maxSpeed = MAX_VEL * force;
 
-		if (currentSpeed > MAX_VEL) {
-			impulse.x *= MAX_VEL / currentSpeed;
-			impulse.z *= MAX_VEL / currentSpeed;
+		if (currentSpeed > maxSpeed) {
+			impulse.x *= maxSpeed / currentSpeed;
+			impulse.z *= maxSpeed / currentSpeed;
 		}
 
 		characterRef.current.applyImpulse(impulse, true);
@@ -219,6 +219,7 @@ export const StickControls = ({
 
 	return (
 		<>
+			<FPSLimiter fps={30} />
 			<OrbitControls
 				autoRotate={false}
 				enableDamping={false}
@@ -242,4 +243,20 @@ export const StickControls = ({
 			</RigidBody>
 		</>
 	);
+};
+
+const FPSLimiter = ({ fps }) => {
+	const [clock] = React.useState(new THREE.Clock());
+
+	useFrame((state) => {
+		state.ready = false;
+		const timeUntilNextFrame = 1000 / fps - clock.getDelta();
+
+		setTimeout(() => {
+			state.ready = true;
+			state.invalidate();
+		}, Math.max(0, timeUntilNextFrame));
+	});
+
+	return <></>;
 };
