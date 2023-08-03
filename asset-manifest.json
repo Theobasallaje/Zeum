@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/Zeum/static/css/main.68b7e87a.css",
-    "main.js": "/Zeum/static/js/main.a050b4ac.js",
+    "main.js": "/Zeum/static/js/main.b0ef7228.js",
     "index.html": "/Zeum/index.html",
     "main.68b7e87a.css.map": "/Zeum/static/css/main.68b7e87a.css.map",
-    "main.a050b4ac.js.map": "/Zeum/static/js/main.a050b4ac.js.map"
+    "main.b0ef7228.js.map": "/Zeum/static/js/main.b0ef7228.js.map"
   },
   "entrypoints": [
     "static/css/main.68b7e87a.css",
-    "static/js/main.a050b4ac.js"
+    "static/js/main.b0ef7228.js"
   ]
 }
