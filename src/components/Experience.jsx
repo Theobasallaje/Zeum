@@ -1,9 +1,8 @@
-import { Cylinder, Box, Html, Plane } from "@react-three/drei";
-import { RigidBody, CylinderCollider, CuboidCollider } from "@react-three/rapier";
+import { Box, Plane } from "@react-three/drei";
+import { RigidBody, CuboidCollider } from "@react-three/rapier";
 import { StickControls } from "./StickControls";
-import { useMemo, useEffect } from "react";
+import { useMemo } from "react";
 import { TextureLoader } from "three";
-import { relayInit, generatePrivateKey, getPublicKey, getEventHash, getSignature } from "nostr-tools";
 
 export const Experience = () => {
     const isTouchScreen = useMemo(() => {
