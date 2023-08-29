@@ -2,7 +2,7 @@ import { useBox } from "@react-three/cannon";
 import { useFrame } from "@react-three/fiber";
 import { Vector3 } from "three";
 import React, { useRef } from "react";
-import { usePersonControls } from "./hooks";
+import { usePersonControls } from "./Hooks";
 import { PerspectiveCamera } from "@react-three/drei";
 
 export const PlayerControls = ({ showJoystick }) => {

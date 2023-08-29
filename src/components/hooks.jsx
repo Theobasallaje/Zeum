@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import nipplejs from "nipplejs";
 
-let joyManager;
-
 export const usePersonControls = ({ showJoystick }) => {
     const [movement, setMovement] = useState({
         forward: false,
@@ -43,6 +41,20 @@ export const usePersonControls = ({ showJoystick }) => {
 };
 
 function useJoystick({ show, setMovement }) {
+    let joyManager;
+
+    const joystickOptions = {
+        zone: document.getElementById("joystickWrapper1"),
+        size: 120,
+        multitouch: true,
+        maxNumberOfNipples: 2,
+        mode: "static",
+        restJoystick: true,
+        shape: "circle",
+        position: { top: "60px", left: "60px" },
+        dynamicPage: true,
+    };
+
     useEffect(() => {
         const handleMove = (evt, data) => {
             const forward = data.vector.y;
@@ -60,7 +72,7 @@ function useJoystick({ show, setMovement }) {
         };
 
         if (!joyManager && show) {
-            joyManager = nipplejs.create(NIPPLEJS_OPTIONS);
+            joyManager = nipplejs.create(joystickOptions);
             joyManager["0"].on("move", handleMove);
             joyManager["0"].on("end", handleEnd);
         }
@@ -73,15 +85,3 @@ function useJoystick({ show, setMovement }) {
         };
     }, [setMovement, show]);
 }
-
-const NIPPLEJS_OPTIONS = {
-    zone: document.getElementById("joystickWrapper1"),
-    size: 120,
-    multitouch: true,
-    maxNumberOfNipples: 2,
-    mode: "static",
-    restJoystick: true,
-    shape: "circle",
-    position: { top: "60px", left: "60px" },
-    dynamicPage: true,
-};
