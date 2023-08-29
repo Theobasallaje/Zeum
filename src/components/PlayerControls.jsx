@@ -10,9 +10,9 @@ export const PlayerControls = ({ showJoystick }) => {
     const { forward, backward, left, right } = usePersonControls({ showJoystick });
 
     const [ref, api] = useBox(() => ({
-        mass: 10,
-        position: [0, -4, -10],
-        type: "Dynamic",
+        mass: 1,
+        position: [0, 10, -10],
+
         fixedRotation: true,
     }));
 
@@ -23,13 +23,17 @@ export const PlayerControls = ({ showJoystick }) => {
 
         frontVector.set(0, 0, Number(forward) - Number(backward));
         sideVector.set(Number(right) - Number(left), 0, 0);
-        direction.subVectors(frontVector, sideVector).normalize().multiplyScalar(30);
-        api.velocity.set(direction.x, 0, direction.z);
+        direction
+            .subVectors(frontVector, sideVector)
+            .normalize()
+            .multiplyScalar(30 * Math.sqrt(2));
+
+        api.velocity.set(direction.x, -15, direction.z);
     });
 
     return (
         <group ref={ref} api={api}>
-            <PerspectiveCamera ref={cameraRef} makeDefault position={[0, 1, -5]} rotation={[0, Math.PI, 0]} />
+            <PerspectiveCamera ref={cameraRef} makeDefault position={[0, 1, -10]} rotation={[0, Math.PI, 0]} />
 
             <mesh receiveShadow castShadow>
                 <meshStandardMaterial color="white" />

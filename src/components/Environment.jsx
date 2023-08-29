@@ -5,7 +5,7 @@ import { TextureLoader } from "three";
 export const Plane = (props) => {
     const [ref] = usePlane(() => ({ ...props }), useRef(null));
     return (
-        <mesh ref={ref} receiveShadow castShadow>
+        <mesh ref={ref} receiveShadow castShadow type="fixed">
             <planeGeometry args={[50, 50]} />
             <meshStandardMaterial color="gray" />
         </mesh>
@@ -13,12 +13,14 @@ export const Plane = (props) => {
 };
 
 export const Wall = (props) => {
-    const [ref] = useBox(() => ({ ...props }), useRef(null));
+    const [wallRef] = useBox(() => ({ ...props, type: "Static" }), useRef(null));
     return (
-        <mesh ref={ref} receiveShadow castShadow>
-            <boxGeometry args={[props.width, props.height, props.depth]} />
-            <meshStandardMaterial color="gray" />
-        </mesh>
+        <group>
+            <mesh ref={wallRef} type="fixed" receiveShadow castShadow>
+                <boxGeometry args={[props.width, props.height, props.depth]} />
+                <meshStandardMaterial color="gray" />
+            </mesh>
+        </group>
     );
 };
 
