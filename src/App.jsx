@@ -1,34 +1,94 @@
-import { useMemo } from "react";
-import { Canvas } from "@react-three/fiber";
-import { Physics } from "@react-three/cannon";
-import { Plane, Wall, DisplayWall } from "./components/Environment";
-import { PlayerControls } from "./components/PlayerControls";
+import { useMemo, useState, useEffect } from "react";
+
+import { NostrDialog } from "./components/NostrDialog";
+import {
+    Container,
+    Button,
+    Backdrop,
+    Grid,
+    Typography,
+    CircularProgress,
+    Box,
+    LinearProgress,
+    Stack,
+    Chip,
+} from "@mui/material";
+import { useNostrEvents } from "nostr-react";
+import { nip19 } from "nostr-tools";
+import { findImageUrlsInEvent } from "./utils/Utils";
+import { Scene } from "./components/Scene";
+import { ArrowBack, ArrowLeft, RestartAlt, TimeToLeave } from "@mui/icons-material";
 
 export const App = () => {
-    const isTouchScreen = useMemo(() => {
-        return "maxTouchPoints" in navigator ? navigator.maxTouchPoints > 0 : false;
-    }, []);
+    const [open, setOpen] = useState(true);
+    const [eventId, setEventId] = useState("");
+    const [images, setImages] = useState([]);
+
+    const handleClickOpen = () => {
+        setOpen(true);
+    };
+
+    const decodedEventId = useMemo(() => {
+        if (eventId && eventId.length > 7) {
+            const decodedEvent = nip19.decode(eventId);
+            return decodedEvent?.data?.id;
+        }
+    }, [eventId]);
+
+    const { events, isLoading } = useNostrEvents({
+        filter: {
+            ids: [decodedEventId],
+        },
+    });
+
+    const selectedEvent = useMemo(() => events.find((event) => event.id === decodedEventId), [decodedEventId, events]);
+    const noImagesFound = useMemo(() => !!selectedEvent && images?.length < 1, [images?.length, selectedEvent]);
+
+    useEffect(() => {
+        if (selectedEvent && images?.length < 1) {
+            const imageUrls = findImageUrlsInEvent(selectedEvent);
+            setImages(imageUrls);
+        }
+    }, [events, eventId, images, selectedEvent]);
 
     return (
-        <Canvas
-            camera={{ far: 100, near: 1, position: [0, 10, -10], zoom: 50 }}
-            orthographic
-            shadows
-            gl={{
-                // todo: stop using legacy lights
-                useLegacyLights: true,
-            }}
-        >
-            <ambientLight intensity={0.2} />
-            <pointLight position={[0, 5, 4]} color="white" intensity={0.8} />
-
-            <Physics iterations={15} gravity={[0, -15, 0]}>
-                <Plane rotation={[-Math.PI / 2, 0, 0]} receiveShadow />
-                <Wall position={[0, 5, 25]} args={[50, 25, 0.5]} width={50} height={10} depth={0.5} />
-                <DisplayWall args={[5, 5, 0.5]} position={[0, 2.5, 10]} width={5} height={5} depth={0.5} />
-
-                <PlayerControls showJoystick={isTouchScreen} />
-            </Physics>
-        </Canvas>
+        <>
+            <Backdrop
+                sx={{ backgroundColor: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                open={isLoading || noImagesFound}
+            >
+                {noImagesFound ? (
+                    <Stack>
+                        <Typography>
+                            We could not generate a zeum from this note because it does not contain any readable media.
+                        </Typography>
+                        <Button color="primary" disableElevation variant="contained" onClick={handleClickOpen}>
+                            <ArrowBack /> Back
+                        </Button>
+                    </Stack>
+                ) : (
+                    <Stack>
+                        <Typography>Loading your Zeum</Typography>
+                        <LinearProgress />
+                    </Stack>
+                )}
+            </Backdrop>
+            <Container>
+                <Stack direction="row-reverse" marginTop={2}>
+                    <Button color="primary" disableElevation variant="contained" onClick={handleClickOpen}>
+                        Exit Zeum
+                    </Button>
+                </Stack>
+            </Container>
+            <NostrDialog
+                open={open}
+                setOpen={setOpen}
+                eventId={eventId}
+                setEventId={setEventId}
+                setImages={setImages}
+                isLoading={isLoading}
+            />
+            {eventId && images?.length > 0 && <Scene images={images} />}
+        </>
     );
 };

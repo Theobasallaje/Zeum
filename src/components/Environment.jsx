@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { usePlane, useBox } from "@react-three/cannon";
 import { TextureLoader } from "three";
+import { Html } from "@react-three/drei";
 
 export const Plane = (props) => {
     const [ref] = usePlane(() => ({ ...props }), useRef(null));
@@ -25,10 +26,8 @@ export const Wall = (props) => {
 };
 
 export const DisplayWall = (props) => {
-    const artTexture = new TextureLoader().load(
-        "https://cdn.nostr.build/i/6c44053c67153a367055f5366737e51f6c5773acef636ba34cf48d53a9712a12.jpg"
-    );
-    const frameTexture = new TextureLoader().load("https://wallpapercave.com/wp/wp3637943.jpg");
+    const artTexture = new TextureLoader().load(props?.image ?? <Html>Could not find an image</Html>);
+    //const frameTexture = new TextureLoader().load("https://wallpapercave.com/wp/wp3637943.jpg");
     const [wallRef] = useBox(() => ({ ...props, type: "Static" }), useRef(null));
     const [canvasRef] = useBox(() => ({ ...props, type: "Static" }), useRef(null));
     const [frameRef] = useBox(() => ({ ...props, type: "Static" }), useRef(null));
@@ -41,7 +40,7 @@ export const DisplayWall = (props) => {
             </mesh>
             <mesh ref={frameRef} receiveShadow castShadow>
                 <boxGeometry args={[props.width / 1.2, props.height / 1.45, props.depth]} />
-                <meshStandardMaterial attach="material" map={frameTexture} />
+                <meshStandardMaterial color="black" map={undefined} />
             </mesh>
             <mesh ref={canvasRef} receiveShadow castShadow>
                 <boxGeometry args={[props.width / 1.25, props.height / 1.5, props.depth]} />
