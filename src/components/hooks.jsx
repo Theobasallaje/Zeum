@@ -1,7 +1,54 @@
 import { useState, useEffect } from "react";
+import { nip19 } from "nostr-tools";
 import nipplejs from "nipplejs";
 
 export const usePersonControls = ({ showJoystick }) => {
+    function useJoystick({ show, setMovement }) {
+        let joyManager;
+
+        const joystickOptions = {
+            zone: document.getElementById("joystickWrapper1"),
+            size: 120,
+            multitouch: true,
+            maxNumberOfNipples: 2,
+            mode: "static",
+            restJoystick: true,
+            shape: "circle",
+            position: { top: "60px", left: "60px" },
+            dynamicPage: true,
+        };
+
+        useEffect(() => {
+            const handleMove = (evt, data) => {
+                const forward = data.vector.y;
+                const turn = data.vector.x;
+
+                if (forward > 0) {
+                    setMovement((m) => ({ ...m, forward: true, backward: false, left: turn < -0.45, right: turn > 0.45 }));
+                } else if (forward < 0) {
+                    setMovement((m) => ({ ...m, backward: true, forward: false, left: turn < -0.45, right: turn > 0.45 }));
+                }
+            };
+
+            const handleEnd = () => {
+                setMovement((m) => ({ ...m, forward: false, backward: false, left: false, right: false }));
+            };
+
+            if (!joyManager && show) {
+                joyManager = nipplejs.create(joystickOptions);
+                joyManager["0"].on("move", handleMove);
+                joyManager["0"].on("end", handleEnd);
+            }
+
+            return () => {
+                if (joyManager) {
+                    joyManager["0"].off("move", handleMove);
+                    joyManager["0"].off("end", handleEnd);
+                }
+            };
+        }, [setMovement, show]);
+    }
+
     const [movement, setMovement] = useState({
         forward: false,
         backward: false,
@@ -44,48 +91,29 @@ export const usePersonControls = ({ showJoystick }) => {
     return movement;
 };
 
-function useJoystick({ show, setMovement }) {
-    let joyManager;
-
-    const joystickOptions = {
-        zone: document.getElementById("joystickWrapper1"),
-        size: 120,
-        multitouch: true,
-        maxNumberOfNipples: 2,
-        mode: "static",
-        restJoystick: true,
-        shape: "circle",
-        position: { top: "60px", left: "60px" },
-        dynamicPage: true,
-    };
+export const useNostrEventIdDecode = ({ eventIdInput }) => {
+    const [decodedId, setDecodedId] = useState(null);
+    const [isValid, setIsValid] = useState(true);
+    const [validationError, setValidationError] = useState(null);
 
     useEffect(() => {
-        const handleMove = (evt, data) => {
-            const forward = data.vector.y;
-            const turn = data.vector.x;
-
-            if (forward > 0) {
-                setMovement((m) => ({ ...m, forward: true, backward: false, left: turn < -0.45, right: turn > 0.45 }));
-            } else if (forward < 0) {
-                setMovement((m) => ({ ...m, backward: true, forward: false, left: turn < -0.45, right: turn > 0.45 }));
+        if (eventIdInput) {
+            setIsValid(true);
+            setValidationError(null);
+            try {
+                const decodedEvent = nip19.decode(eventIdInput);
+                if (decodedEvent?.data) {
+                    setDecodedId(decodedEvent.data?.id ?? decodedEvent.data);
+                } else {
+                    setIsValid(false);
+                    setValidationError(new Error("Could not decode event ID"));
+                }
+            } catch (error) {
+                setIsValid(false);
+                setValidationError(error);
             }
-        };
-
-        const handleEnd = () => {
-            setMovement((m) => ({ ...m, forward: false, backward: false, left: false, right: false }));
-        };
-
-        if (!joyManager && show) {
-            joyManager = nipplejs.create(joystickOptions);
-            joyManager["0"].on("move", handleMove);
-            joyManager["0"].on("end", handleEnd);
         }
+    }, [decodedId, eventIdInput, isValid, validationError]);
 
-        return () => {
-            if (joyManager) {
-                joyManager["0"].off("move", handleMove);
-                joyManager["0"].off("end", handleEnd);
-            }
-        };
-    }, [setMovement, show]);
-}
+    return { decodedId, isValid, validationError };
+};

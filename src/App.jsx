@@ -1,47 +1,27 @@
 import { useMemo, useState, useEffect } from "react";
-
 import { NostrDialog } from "./components/NostrDialog";
-import {
-    Container,
-    Button,
-    Backdrop,
-    Grid,
-    Typography,
-    CircularProgress,
-    Box,
-    LinearProgress,
-    Stack,
-    Chip,
-} from "@mui/material";
+import { Container, Button, Backdrop, Typography, LinearProgress, Stack } from "@mui/material";
 import { useNostrEvents } from "nostr-react";
-import { nip19 } from "nostr-tools";
 import { findImageUrlsInEvent } from "./utils/Utils";
 import { Scene } from "./components/Scene";
-import { ArrowBack, ArrowLeft, RestartAlt, TimeToLeave } from "@mui/icons-material";
+import { ArrowBack } from "@mui/icons-material";
 
-export const App = () => {
+export const App = ({ debug }) => {
     const [open, setOpen] = useState(true);
-    const [eventId, setEventId] = useState("");
+    const [eventId, setEventId] = useState(null);
     const [images, setImages] = useState([]);
 
     const handleClickOpen = () => {
         setOpen(true);
     };
-
-    const decodedEventId = useMemo(() => {
-        if (eventId && eventId.length > 7) {
-            const decodedEvent = nip19.decode(eventId);
-            return decodedEvent?.data?.id;
-        }
-    }, [eventId]);
-
     const { events, isLoading } = useNostrEvents({
         filter: {
-            ids: [decodedEventId],
+            ids: [eventId],
         },
+        enabled: !!eventId,
     });
 
-    const selectedEvent = useMemo(() => events.find((event) => event.id === decodedEventId), [decodedEventId, events]);
+    const selectedEvent = useMemo(() => events.find((event) => event.id === eventId), [eventId, events]);
     const noImagesFound = useMemo(() => !!selectedEvent && images?.length < 1, [images?.length, selectedEvent]);
 
     useEffect(() => {
@@ -50,6 +30,12 @@ export const App = () => {
             setImages(imageUrls);
         }
     }, [events, eventId, images, selectedEvent]);
+
+    useEffect(() => {
+        if (debug) {
+            console.log({ eventId, selectedEvent, images });
+        }
+    }, [debug, eventId, images, selectedEvent]);
 
     return (
         <>
