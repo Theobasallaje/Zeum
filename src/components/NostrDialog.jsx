@@ -3,7 +3,7 @@ import { Button, TextField, Dialog, DialogActions, DialogContent, Container, Gri
 import { ArrowForward } from "@mui/icons-material";
 import { useNostrEventIdDecode } from "./Hooks";
 
-export const NostrDialog = ({ open, setOpen, eventId, setEventId, setImages, isLoading }) => {
+export const NostrDialog = ({ open, setOpen, eventId, setEventId, setImages, setIsLoadingRoom }) => {
     const [eventIdInput, setEventIdInput] = useState(eventId ?? "");
     const { decodedId, isValid, validationError } = useNostrEventIdDecode({ eventIdInput });
 
@@ -14,9 +14,13 @@ export const NostrDialog = ({ open, setOpen, eventId, setEventId, setImages, isL
 
     const handleEnterZeum = useCallback(() => {
         setImages([]);
+
+        setIsLoadingRoom(true);
         setEventId(decodedId);
         setOpen(false);
-    }, [decodedId, setEventId, setImages, setOpen]);
+
+        setTimeout(() => setIsLoadingRoom(false), 3000);
+    }, [decodedId, setEventId, setImages, setIsLoadingRoom, setOpen]);
 
     const handleClose = useCallback(() => {
         setOpen(false);
@@ -30,7 +34,6 @@ export const NostrDialog = ({ open, setOpen, eventId, setEventId, setImages, isL
                         <TextField
                             onChange={handleEventIdChange}
                             value={eventIdInput}
-                            autoFocus
                             id="nostr-nevent-input"
                             label="Enter Nostr Event ID"
                             error={!isValid}

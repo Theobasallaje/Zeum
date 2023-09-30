@@ -2,18 +2,18 @@ import { useBox } from "@react-three/cannon";
 import { useFrame } from "@react-three/fiber";
 import { Vector3 } from "three";
 import { useRef } from "react";
-import { usePersonControls } from "./Hooks";
-import { PerspectiveCamera } from "@react-three/drei";
+import { useControls } from "./Hooks";
+import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 
 export const PlayerControls = ({ showJoystick }) => {
+    const speedMultiplier = 0.5;
     const cameraRef = useRef();
-    const { forward, backward, left, right } = usePersonControls({ showJoystick });
-
-    const [ref, api] = useBox(() => ({
-        mass: 1,
-        position: [0, 10, -10],
-
+    const { forward, backward, left, right } = useControls({ showJoystick });
+    const [playerRef, playerApi] = useBox(() => ({
+        mass: 50,
+        position: [0, 0, -10],
         fixedRotation: true,
+        args: [2, 2, 2],
     }));
 
     useFrame(() => {
@@ -28,16 +28,23 @@ export const PlayerControls = ({ showJoystick }) => {
             .normalize()
             .multiplyScalar(30 * Math.sqrt(2));
 
-        api.velocity.set(direction.x, -15, direction.z);
+        playerApi.velocity.set(direction.x, -15, direction.z);
     });
 
     return (
-        <group ref={ref} api={api}>
-            <PerspectiveCamera ref={cameraRef} makeDefault position={[0, 1, -10]} rotation={[0, Math.PI, 0]} />
+        <group ref={playerRef} api={playerApi} name="player-group">
+            {/* <OrbitControls ref={cameraRef} /> */}
+            <PerspectiveCamera
+                ref={cameraRef}
+                makeDefault
+                isPerspectiveCamera
+                position={[5.6, 16.5, -27]}
+                rotation={[-2.7, 0.13, 3.07]}
+            />
 
             <mesh receiveShadow castShadow>
                 <meshStandardMaterial color="white" />
-                <boxGeometry args={[1, 1, 1]} />
+                <boxGeometry args={[2, 2, 2]} />
             </mesh>
         </group>
     );

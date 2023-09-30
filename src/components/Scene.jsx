@@ -1,10 +1,10 @@
 import { useMemo, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Physics } from "@react-three/cannon";
-import { Plane, Wall, DisplayWall } from "./Environment";
+import { Physics, useBox } from "@react-three/cannon";
+import { Wall, DisplayWall, MainFloor, ExitPlane } from "./Environment";
 import { PlayerControls } from "./PlayerControls";
 
-export const Scene = ({ images }) => {
+export const Scene = ({ eventId, images, handleExit }) => {
     const isTouchScreen = useMemo(() => {
         return "maxTouchPoints" in navigator ? navigator.maxTouchPoints > 0 : false;
     }, []);
@@ -13,24 +13,32 @@ export const Scene = ({ images }) => {
         return images?.length > 0 ? images[0] : undefined;
     }, [images]);
 
-    return (
-        <Canvas camera={{ far: 100, near: 1, position: [0, 10, -10], zoom: 50 }} orthographic shadows>
-            <ambientLight intensity={1.5} />
-            <pointLight position={[0, 5, 4]} color="white" intensity={75} />
+    return eventId ? (
+        <Canvas dpr={[1, 2]} camera={{ far: 100, near: 1, position: [0, 10, -10], zoom: 50, fov: 50 }} orthographic shadows>
+            <ambientLight intensity={2} position={[0, 10, 4]} />
+            <pointLight position={[0, 8, 4]} color="white" intensity={75} castShadow />
 
             <Physics iterations={15} gravity={[0, -15, 0]}>
-                <Plane rotation={[-Math.PI / 2, 0, 0]} receiveShadow />
+                {/* Back Wall */}
                 <Wall position={[0, 5, 25]} args={[50, 25, 0.5]} width={50} height={10} depth={0.5} />
+                {/* Left Wall */}
+                <Wall position={[-24, 2.5, 0]} args={[2, 5, 50]} width={2} height={5} depth={50} />
+                {/* Right Wall */}
+                <Wall position={[24, 2.5, 0]} args={[2, 5, 50]} width={2} height={5} depth={50} />
+                <MainFloor />
                 <DisplayWall
                     image={firstImage}
-                    args={[5, 5, 0.5]}
-                    position={[0, 2.5, 10]}
-                    width={5}
-                    height={5}
+                    args={[12, 10, 0.5]}
+                    position={[0, 4, 10]}
+                    width={10}
+                    height={8}
                     depth={0.5}
                 />
                 <PlayerControls showJoystick={isTouchScreen} />
+                <ExitPlane handleExit={handleExit} />
             </Physics>
         </Canvas>
+    ) : (
+        <></>
     );
 };

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { nip19 } from "nostr-tools";
 import nipplejs from "nipplejs";
 
-export const usePersonControls = ({ showJoystick }) => {
+export const useControls = ({ showJoystick }) => {
     function useJoystick({ show, setMovement }) {
         let joyManager;
 
@@ -22,16 +22,17 @@ export const usePersonControls = ({ showJoystick }) => {
             const handleMove = (evt, data) => {
                 const forward = data.vector.y;
                 const turn = data.vector.x;
+                const force = data.force;
 
                 if (forward > 0) {
-                    setMovement((m) => ({ ...m, forward: true, backward: false, left: turn < -0.45, right: turn > 0.45 }));
+                    setMovement((m) => ({ ...m, forward: force, backward: 0, left: turn < -0.45, right: turn > 0.45 }));
                 } else if (forward < 0) {
-                    setMovement((m) => ({ ...m, backward: true, forward: false, left: turn < -0.45, right: turn > 0.45 }));
+                    setMovement((m) => ({ ...m, backward: force, forward: 0, left: turn < -0.45, right: turn > 0.45 }));
                 }
             };
 
             const handleEnd = () => {
-                setMovement((m) => ({ ...m, forward: false, backward: false, left: false, right: false }));
+                setMovement((m) => ({ ...m, forward: 0, backward: 0, left: 0, right: 0 }));
             };
 
             if (!joyManager && show) {

@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { NostrDialog } from "./components/NostrDialog";
 import { Container, Button, Backdrop, Typography, LinearProgress, Stack } from "@mui/material";
 import { useNostrEvents } from "nostr-react";
@@ -10,19 +10,25 @@ export const App = ({ debug }) => {
     const [open, setOpen] = useState(true);
     const [eventId, setEventId] = useState(null);
     const [images, setImages] = useState([]);
-
+    const [isLoadingRoom, setIsLoadingRoom] = useState(false);
     const handleClickOpen = () => {
         setOpen(true);
     };
-    const { events, isLoading } = useNostrEvents({
+    const { events, isLoading: isLoadingNostrEvent } = useNostrEvents({
         filter: {
-            ids: [eventId],
+            ids: eventId ? [eventId] : undefined,
         },
         enabled: !!eventId,
     });
 
     const selectedEvent = useMemo(() => events.find((event) => event.id === eventId), [eventId, events]);
     const noImagesFound = useMemo(() => !!selectedEvent && images?.length < 1, [images?.length, selectedEvent]);
+
+    const handleExit = useCallback((e) => {
+        setEventId(null);
+        setImages([]);
+        setOpen(true);
+    }, []);
 
     useEffect(() => {
         if (selectedEvent && images?.length < 1) {
@@ -41,7 +47,7 @@ export const App = ({ debug }) => {
         <>
             <Backdrop
                 sx={{ backgroundColor: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-                open={isLoading || noImagesFound}
+                open={isLoadingNostrEvent || noImagesFound || isLoadingRoom}
             >
                 {noImagesFound ? (
                     <Stack>
@@ -72,9 +78,9 @@ export const App = ({ debug }) => {
                 eventId={eventId}
                 setEventId={setEventId}
                 setImages={setImages}
-                isLoading={isLoading}
+                setIsLoadingRoom={setIsLoadingRoom}
             />
-            {eventId && images?.length > 0 && <Scene images={images} />}
+            {eventId && images?.length ? <Scene eventId={eventId} images={images} handleExit={handleExit} /> : <></>}
         </>
     );
 };
