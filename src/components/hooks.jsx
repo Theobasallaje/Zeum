@@ -25,14 +25,14 @@ export const useControls = ({ showJoystick }) => {
                 const force = data.force;
 
                 if (forward > 0) {
-                    setMovement((m) => ({ ...m, forward: force, backward: 0, left: turn < -0.45, right: turn > 0.45 }));
+                    setMovement((m) => ({ ...m, forward: 1, backward: 0, left: turn < -0.45, right: turn > 0.45, force }));
                 } else if (forward < 0) {
-                    setMovement((m) => ({ ...m, backward: force, forward: 0, left: turn < -0.45, right: turn > 0.45 }));
+                    setMovement((m) => ({ ...m, backward: 1, forward: 0, left: turn < -0.45, right: turn > 0.45, force }));
                 }
             };
 
             const handleEnd = () => {
-                setMovement((m) => ({ ...m, forward: 0, backward: 0, left: 0, right: 0 }));
+                setMovement((m) => ({ ...m, forward: 0, backward: 0, left: 0, right: 0, force: 1 }));
             };
 
             if (!joyManager && show) {
@@ -56,6 +56,7 @@ export const useControls = ({ showJoystick }) => {
         left: false,
         right: false,
         jump: false,
+        force: 0,
     });
 
     useJoystick({ show: showJoystick, setMovement });
@@ -74,10 +75,10 @@ export const useControls = ({ showJoystick }) => {
         };
         const moveFieldByKey = (key) => keys[key];
         const handleKeyDown = (e) => {
-            setMovement((m) => ({ ...m, [moveFieldByKey(e.code)]: true }));
+            setMovement((m) => ({ ...m, [moveFieldByKey(e.code)]: true, force: 1 }));
         };
         const handleKeyUp = (e) => {
-            setMovement((m) => ({ ...m, [moveFieldByKey(e.code)]: false }));
+            setMovement((m) => ({ ...m, [moveFieldByKey(e.code)]: false, force: 1 }));
         };
 
         document.addEventListener("keydown", handleKeyDown);
