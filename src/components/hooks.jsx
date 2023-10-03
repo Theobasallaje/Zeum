@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { nip19 } from "nostr-tools";
 import nipplejs from "nipplejs";
 
@@ -117,4 +117,18 @@ export const useNostrEventIdDecode = ({ eventIdInput }) => {
     }, [decodedId, eventIdInput, isValid, validationError]);
 
     return { decodedId, isValid, validationError };
+};
+
+export const BasicParticles = () => {
+    // This reference gives us direct access to our points
+    const points = useRef();
+
+    // You can see that, like our mesh, points also takes a geometry and a material,
+    // but a specific material => pointsMaterial
+    return (
+        <points ref={points}>
+            <sphereGeometry args={[1, 48, 48]} />
+            <pointsMaterial color="#5786F5" size={0.015} sizeAttenuation />
+        </points>
+    );
 };

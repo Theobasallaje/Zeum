@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { NostrDialog } from "./components/NostrDialog";
 import { Container, Button, Backdrop, Typography, LinearProgress, Stack } from "@mui/material";
 import { useNostrEvents } from "nostr-react";

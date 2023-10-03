@@ -1,12 +1,13 @@
-import { useRef, useMemo } from "react";
+import React, { useRef, useMemo, useCallback } from "react";
 import { usePlane, useBox } from "@react-three/cannon";
 import { TextureLoader, Vector3 } from "three";
 import { Html, GradientTexture } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
+import Particles from "react-particles";
+import { loadSlim } from "tsparticles-slim";
 
 export const MainFloor = () => {
     const [ref] = usePlane(() => ({ rotation: [-Math.PI / 2, 0, 0], receiveShadow: true }), useRef(null));
-
     return (
         <mesh ref={ref} receiveShadow castShadow type="fixed">
             <planeGeometry args={[50, 50, 5]} />
@@ -98,6 +99,64 @@ export const DisplayWall = (props) => {
                 <meshStandardMaterial attach="material" map={artTexture} />
             </mesh>
         </group>
+    );
+};
+
+export const Overlay = () => {
+    const particlesInit = useCallback(async (engine) => {
+        console.log(engine);
+        // you can initiate the tsParticles instance (engine) here, adding custom shapes or presets
+        // this loads the tsparticles package bundle, it's the easiest method for getting everything ready
+        // starting from v2 you can add only the features you need reducing the bundle size
+        //await loadFull(engine);
+        await loadSlim(engine);
+    }, []);
+
+    const particlesLoaded = useCallback(async (container) => {
+        await console.log(container);
+    }, []);
+
+    return (
+        <Particles
+            id="tsparticles"
+            init={particlesInit}
+            loaded={particlesLoaded}
+            options={{
+                fpsLimit: 120,
+
+                particles: {
+                    color: {
+                        value: "#ffffff",
+                    },
+
+                    move: {
+                        direction: "bottom",
+                        enable: true,
+
+                        random: false,
+                        speed: 0.8,
+                        straight: false,
+                    },
+                    number: {
+                        density: {
+                            enable: true,
+                            area: 1500,
+                        },
+                        value: 80,
+                    },
+                    opacity: {
+                        value: 0.5,
+                    },
+                    shape: {
+                        type: "circle",
+                    },
+                    size: {
+                        value: { min: 0.1, max: 1 },
+                    },
+                },
+                detectRetina: true,
+            }}
+        />
     );
 };
 
