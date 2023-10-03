@@ -6,7 +6,7 @@ import { NostrProvider } from "nostr-react";
 
 const root = createRoot(document.getElementById("root"));
 const relayUrls = [
-    "wss://relayable.org	",
+    "wss://relayable.org",
     "wss://lightningrelay.com",
     "wss://relay.nostr.band",
     "wss://nostr.wine",
