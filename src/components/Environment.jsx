@@ -159,16 +159,3 @@ export const Overlay = () => {
         />
     );
 };
-
-export const useForwardRaycast = (obj) => {
-    const { raycaster } = useThree();
-    const pos = useMemo(() => new Vector3(), []);
-    const dir = useMemo(() => new Vector3(), []);
-    const scene = useThree((state) => state.scene);
-
-    return () => {
-        if (!obj.current) return [];
-        raycaster.set(obj.current.getWorldPosition(pos), obj.current.getWorldDirection(dir));
-        return raycaster.intersectObjects(scene.children);
-    };
-};
