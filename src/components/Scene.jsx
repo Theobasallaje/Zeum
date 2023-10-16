@@ -1,17 +1,23 @@
-import React, { useMemo, useEffect } from "react";
+import React, { useMemo } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Physics, useBox } from "@react-three/cannon";
-import { Wall, DisplayWall, MainFloor, ExitPlane, Overlay } from "./Environment";
+import { ExitPlane, Overlay } from "./Environment";
 import { PlayerControls } from "./PlayerControls";
+import { SingleArtifactRoom } from "./rooms/SingleArtifactRoom";
+import { DoubleArtifactRoom } from "./rooms/DoubleArtifactRoom";
+import { TripleArtifactRoom } from "./rooms/TripleArtifactRoom";
+import { OrbitControls } from "@react-three/drei";
 
 export const Scene = ({ eventId, images, handleExit }) => {
+    const roomDepth = useMemo(() => {
+        if (images?.length === 1) return 50;
+        if (images?.length === 2) return 62.5;
+        if (images?.length >= 3) return 78.125;
+    }, [images]);
+
     const isTouchScreen = useMemo(() => {
         return "maxTouchPoints" in navigator ? navigator.maxTouchPoints > 0 : false;
     }, []);
-
-    const firstImage = useMemo(() => {
-        return images?.length > 0 ? images[0] : undefined;
-    }, [images]);
 
     return eventId ? (
         <>
@@ -21,27 +27,16 @@ export const Scene = ({ eventId, images, handleExit }) => {
                 orthographic
                 shadows
             >
+                <OrbitControls />
                 <ambientLight intensity={2} position={[0, 10, 4]} />
-                <pointLight position={[0, 8, 4]} color="white" intensity={75} castShadow />
-
                 <Physics iterations={15} gravity={[0, -15, 0]}>
-                    {/* Back Wall */}
-                    <Wall position={[0, 5, 25]} args={[50, 25, 0.5]} width={50} height={10} depth={0.5} />
-                    {/* Left Wall */}
-                    <Wall position={[-24, 2.5, 0]} args={[2, 5, 50]} width={2} height={5} depth={50} />
-                    {/* Right Wall */}
-                    <Wall position={[24, 2.5, 0]} args={[2, 5, 50]} width={2} height={5} depth={50} />
-                    <MainFloor />
-                    <DisplayWall
-                        image={firstImage}
-                        args={[12, 10, 0.5]}
-                        position={[0, 4, 10]}
-                        width={10}
-                        height={8}
-                        depth={0.5}
-                    />
+                    {images?.length === 1 && (
+                        <SingleArtifactRoom artifact={images[0]} roomDepth={roomDepth} roomWidth={50} />
+                    )}
+                    {images?.length === 2 && <DoubleArtifactRoom artifacts={images} roomDepth={roomDepth} roomWidth={50} />}
+                    {images?.length >= 3 && <TripleArtifactRoom artifacts={images} roomDepth={roomDepth} roomWidth={50} />}
                     <PlayerControls showJoystick={isTouchScreen} />
-                    <ExitPlane handleExit={handleExit} />
+                    <ExitPlane roomHeight={roomDepth} handleExit={handleExit} />
                 </Physics>
             </Canvas>
             <Overlay />

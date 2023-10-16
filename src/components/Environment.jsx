@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useRef, useMemo, useCallback } from "react";
 import { usePlane, useBox } from "@react-three/cannon";
 import { TextureLoader, Vector3 } from "three";
@@ -6,11 +7,11 @@ import { useThree } from "@react-three/fiber";
 import Particles from "react-particles";
 import { loadSlim } from "tsparticles-slim";
 
-export const MainFloor = () => {
+export const MainFloor = ({ height, width }) => {
     const [ref] = usePlane(() => ({ rotation: [-Math.PI / 2, 0, 0], receiveShadow: true }), useRef(null));
     return (
         <mesh ref={ref} receiveShadow castShadow type="fixed">
-            <planeGeometry args={[50, 50, 5]} />
+            <planeGeometry args={[width, height]} />
             <meshStandardMaterial>
                 <GradientTexture
                     stops={[0, 0.1, 0.2, 0.22, 0.26, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]}
@@ -45,19 +46,25 @@ export const Plane = (props) => {
     );
 };
 
-export const ExitPlane = ({ handleExit }) => {
-    const [ref] = useBox(
-        () => ({
-            args: [50, 0, 0],
+export const ExitPlane = ({ roomHeight, handleExit }) => {
+    const [ref] = useBox(() => {
+        const position = [0, 0, -(roomHeight / 2 - 0.5)];
+        console.log("Exit Plane Position:", position);
+        return {
+            args: [roomHeight, 0, 0],
             rotation: [-Math.PI / 2, 0, 0],
-            position: [0, 0, -25],
+            position,
             receiveShadow: true,
             onCollide: handleExit,
-        }),
-        useRef(null)
-    );
+        };
+    }, useRef(null));
 
-    return <mesh ref={ref} type="fixed" name="exit-plane"></mesh>;
+    return (
+        <mesh ref={ref} type="fixed" name="exit-plane">
+            <planeGeometry args={[roomHeight, 0, 0]} />
+            <meshStandardMaterial color="red" />
+        </mesh>
+    );
 };
 
 export const Wall = (props) => {
@@ -73,7 +80,8 @@ export const Wall = (props) => {
 };
 
 export const DisplayWall = (props) => {
-    const artTexture = new TextureLoader().load(props?.image ?? <Html>Could not find an image</Html>);
+    const artTexture = new TextureLoader().load(props?.artifact ?? <Html>Could not find an image</Html>);
+
     const [wallRef] = useBox(() => ({ ...props, type: "Static" }), useRef(null));
     const [frameRef] = useBox(
         () => ({ ...props, position: [props.position[0], props.position[1], props.position[2] - 0.2], type: "Static" }),
@@ -86,6 +94,14 @@ export const DisplayWall = (props) => {
 
     return (
         <group>
+            <pointLight
+                position={[props.position[0], props.position[1], props.position[2] - 5]}
+                rotation={[-Math.PI / 2 + (25 * Math.PI) / 180, 0, 0]}
+                color="white"
+                intensity={25}
+                castShadow
+            />
+
             <mesh ref={wallRef} type="fixed" receiveShadow castShadow>
                 <boxGeometry args={[props.width, props.height, props.depth]} />
                 <meshStandardMaterial color="#6F7378" />
