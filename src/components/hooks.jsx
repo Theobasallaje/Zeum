@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { DodecahedronGeometry, Object3D } from "three";
+import { useFrame } from "@react-three/fiber";
 import { nip19 } from "nostr-tools";
 import nipplejs from "nipplejs";
+import Random from "canvas-sketch-util/random";
+import { Dodecahedron } from "@react-three/drei";
+import { useSphere } from "@react-three/cannon";
 
 export const useControls = ({ showJoystick }) => {
     function useJoystick({ show, setMovement }) {
@@ -120,16 +125,57 @@ export const useNostrEventIdDecode = ({ eventIdInput }) => {
     return { decodedId, isValid, validationError };
 };
 
-export const BasicParticles = () => {
-    // This reference gives us direct access to our points
-    const points = useRef();
+export const Dust = () => {
+    const count = 1500;
+    const mesh = useRef();
 
-    // You can see that, like our mesh, points also takes a geometry and a material,
-    // but a specific material => pointsMaterial
+    const particles = useMemo(() => {
+        const temp = [];
+        for (let i = 0; i < count; i++) {
+            const time = Math.random() * 100;
+            const factor = Math.random() * 50 + 20;
+            const speed = Math.random() * 0.0009;
+            const x = Math.random() * 100 - 50;
+            const y = Math.random() * 200 - 100;
+            const z = Math.random() * 100 - 50;
+
+            temp.push({ time, factor, speed, x, y, z });
+        }
+        return temp;
+    }, []);
+
+    const dummy = useMemo(() => new Object3D(), []);
+
+    useFrame(() => {
+        particles.forEach((particle, index) => {
+            let { factor, speed, x, y, z } = particle;
+
+            // Update the particle time
+            const t = (particle.time += speed);
+
+            // Calculate the falling effect by reducing the y position over time
+            y -= speed;
+
+            // Update the particle position based on the time and falling effect
+            dummy.position.set(
+                x + Math.cos((t / 10) * factor),
+                y + Math.sin((t / 5) * factor),
+                z + Math.sin((t / 10) * factor)
+            );
+
+            dummy.updateMatrix();
+
+            // Apply the matrix to the instanced item
+            mesh.current.setMatrixAt(index, dummy.matrix);
+        });
+
+        mesh.current.instanceMatrix.needsUpdate = true;
+    });
+
     return (
-        <points ref={points}>
-            <sphereGeometry args={[1, 48, 48]} />
-            <pointsMaterial color="#5786F5" size={0.015} sizeAttenuation />
-        </points>
+        <instancedMesh ref={mesh} args={[null, null, count]} receiveShadow castShadow>
+            <dodecahedronGeometry args={[0.025, 0]} />
+            <meshPhongMaterial color="#ffffff" />
+        </instancedMesh>
     );
 };

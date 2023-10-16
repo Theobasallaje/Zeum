@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Wall, MainFloor, DisplayWall } from "../Environment";
 
 export const DoubleArtifactRoom = ({ roomDepth, roomWidth, artifacts }) => {
@@ -6,8 +6,6 @@ export const DoubleArtifactRoom = ({ roomDepth, roomWidth, artifacts }) => {
     const backWallWidth = roomWidth + 2.5;
     const leftWallWidth = 2;
     const rightWallWidth = 2;
-
-    useEffect(() => console.log(artifacts), [artifacts]);
 
     return (
         <>
@@ -39,7 +37,7 @@ export const DoubleArtifactRoom = ({ roomDepth, roomWidth, artifacts }) => {
 
             <DisplayWall
                 artifact={artifacts[0]}
-                args={[12, 10, 0.5]}
+                args={[10.5, 10, 0.5]}
                 position={[8, 4, -10]}
                 width={10}
                 height={8}
@@ -47,7 +45,7 @@ export const DoubleArtifactRoom = ({ roomDepth, roomWidth, artifacts }) => {
             />
             <DisplayWall
                 artifact={artifacts[1]}
-                args={[12, 10, 0.5]}
+                args={[10.5, 10, 0.5]}
                 position={[-8, 4, 10]}
                 width={10}
                 height={8}

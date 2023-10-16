@@ -3,3 +3,7 @@ export function findImageUrlsInEvent(event) {
 
     return event?.content?.match(regex);
 }
+
+export function getRandomRange(min, max) {
+    return Math.random() * (max - min) + min;
+}

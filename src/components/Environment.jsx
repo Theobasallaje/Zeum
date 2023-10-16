@@ -2,8 +2,8 @@
 import React, { useRef, useMemo, useCallback } from "react";
 import { usePlane, useBox } from "@react-three/cannon";
 import { TextureLoader, Vector3 } from "three";
-import { Html, GradientTexture } from "@react-three/drei";
-import { useThree } from "@react-three/fiber";
+import { Html, GradientTexture, PointsBuffer } from "@react-three/drei";
+import { useThree, useFrame } from "@react-three/fiber";
 import Particles from "react-particles";
 import { loadSlim } from "tsparticles-slim";
 
@@ -47,17 +47,16 @@ export const Plane = (props) => {
 };
 
 export const ExitPlane = ({ roomHeight, handleExit }) => {
-    const [ref] = useBox(() => {
-        const position = [0, 0, -(roomHeight / 2 - 0.5)];
-        console.log("Exit Plane Position:", position);
-        return {
+    const [ref] = useBox(
+        () => ({
             args: [roomHeight, 0, 0],
             rotation: [-Math.PI / 2, 0, 0],
-            position,
+            position: [0, 0, -(roomHeight / 2 - 0.5)],
             receiveShadow: true,
             onCollide: handleExit,
-        };
-    }, useRef(null));
+        }),
+        useRef(null)
+    );
 
     return (
         <mesh ref={ref} type="fixed" name="exit-plane">
