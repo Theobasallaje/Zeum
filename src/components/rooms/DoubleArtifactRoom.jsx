@@ -36,17 +36,17 @@ export const DoubleArtifactRoom = ({ roomDepth, roomWidth, artifacts }) => {
             <MainFloor height={roomDepth} width={roomWidth} />
 
             <DisplayWall
-                artifact={artifacts[0]}
+                artifact={artifacts[1]}
                 args={[10.5, 10, 0.5]}
-                position={[8, 4, -10]}
+                position={[8, 4, 10]}
                 width={10}
                 height={8}
                 depth={0.5}
             />
             <DisplayWall
-                artifact={artifacts[1]}
+                artifact={artifacts[0]}
                 args={[10.5, 10, 0.5]}
-                position={[-8, 4, 10]}
+                position={[-8, 4, -10]}
                 width={10}
                 height={8}
                 depth={0.5}

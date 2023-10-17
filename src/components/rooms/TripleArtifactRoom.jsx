@@ -12,7 +12,7 @@ export const TripleArtifactRoom = ({ roomDepth, roomWidth, artifacts }) => {
             <Wall position={[24, 2.5, 0]} args={[2, 5, roomDepth]} width={2} height={5} depth={roomDepth} />
             <MainFloor height={roomDepth} width={roomWidth} />
             <DisplayWall
-                artifact={artifacts[0]}
+                artifact={artifacts[2]}
                 args={[10.5, 10, 0.5]}
                 position={[0, 4, 10]}
                 width={10}
@@ -28,7 +28,7 @@ export const TripleArtifactRoom = ({ roomDepth, roomWidth, artifacts }) => {
                 depth={0.5}
             />
             <DisplayWall
-                artifact={artifacts[2]}
+                artifact={artifacts[0]}
                 args={[10.5, 10, 0.5]}
                 position={[8, 4, -20]}
                 width={10}
