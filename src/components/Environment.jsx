@@ -58,12 +58,7 @@ export const ExitPlane = ({ roomHeight, handleExit }) => {
         useRef(null)
     );
 
-    return (
-        <mesh ref={ref} type="fixed" name="exit-plane">
-            <planeGeometry args={[roomHeight, 0, 0]} />
-            <meshStandardMaterial color="red" />
-        </mesh>
-    );
+    return <mesh ref={ref} type="fixed" name="exit-plane"></mesh>;
 };
 
 export const Wall = (props) => {

@@ -1,12 +1,12 @@
 import React, { useMemo } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Physics, useBox } from "@react-three/cannon";
+import { Physics } from "@react-three/cannon";
 import { ExitPlane } from "./Environment";
 import { PlayerControls } from "./PlayerControls";
 import { SingleArtifactRoom } from "./rooms/SingleArtifactRoom";
 import { DoubleArtifactRoom } from "./rooms/DoubleArtifactRoom";
 import { TripleArtifactRoom } from "./rooms/TripleArtifactRoom";
-import { OrbitControls } from "@react-three/drei";
+
 import { Dust } from "./Hooks";
 
 export const Scene = ({ eventId, images, handleExit }) => {
@@ -36,7 +36,7 @@ export const Scene = ({ eventId, images, handleExit }) => {
                     )}
                     {images?.length === 2 && <DoubleArtifactRoom artifacts={images} roomDepth={roomDepth} roomWidth={50} />}
                     {images?.length >= 3 && <TripleArtifactRoom artifacts={images} roomDepth={roomDepth} roomWidth={50} />}
-                    <PlayerControls showJoystick={isTouchScreen} />
+                    <PlayerControls showJoystick={isTouchScreen} startPosition={[0, 0, -(roomDepth / 2.5)]} />
                     <ExitPlane roomHeight={roomDepth} handleExit={handleExit} />
                 </Physics>
             </Canvas>

@@ -6,12 +6,12 @@ import React, { useRef } from "react";
 import { useControls } from "./Hooks";
 import { PerspectiveCamera } from "@react-three/drei";
 
-export const PlayerControls = ({ showJoystick }) => {
+export const PlayerControls = ({ showJoystick, startPosition }) => {
     const cameraRef = useRef();
     const { forward, backward, left, right, force } = useControls({ showJoystick });
     const [playerRef, playerApi] = useBox(() => ({
         mass: 50,
-        position: [0, 0, -10],
+        position: startPosition,
         fixedRotation: true,
         args: [2, 2, 2],
     }));
