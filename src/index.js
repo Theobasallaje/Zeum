@@ -10,12 +10,12 @@ const relayUrls = [
     "wss://lightningrelay.com",
     "wss://relay.nostr.band",
     "wss://nostr.wine",
-    "wss://brb.io",
+    //"wss://brb.io",
     "wss://at.nostrworks.com",
 ];
 
 root.render(
     <NostrProvider relayUrls={relayUrls}>
-        <App debug />
+        <App />
     </NostrProvider>
 );

@@ -1,9 +1,8 @@
 // @ts-nocheck
-import React, { useRef, useMemo, useCallback } from "react";
+import React, { useRef, useCallback } from "react";
 import { usePlane, useBox } from "@react-three/cannon";
-import { TextureLoader, Vector3 } from "three";
-import { Html, GradientTexture, PointsBuffer } from "@react-three/drei";
-import { useThree, useFrame } from "@react-three/fiber";
+import { TextureLoader } from "three";
+import { Html, GradientTexture } from "@react-three/drei";
 import Particles from "react-particles";
 import { loadSlim } from "tsparticles-slim";
 

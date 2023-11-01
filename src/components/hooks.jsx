@@ -1,11 +1,8 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { DodecahedronGeometry, Object3D } from "three";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { Object3D } from "three";
 import { useFrame } from "@react-three/fiber";
 import { nip19 } from "nostr-tools";
 import nipplejs from "nipplejs";
-import Random from "canvas-sketch-util/random";
-import { Dodecahedron } from "@react-three/drei";
-import { useSphere } from "@react-three/cannon";
 
 export const useControls = ({ showJoystick }) => {
     function useJoystick({ show, setMovement }) {
