@@ -10,6 +10,7 @@ export const App = () => {
         <>
             <Router>
                 <Routes>
+                    <Route path="/" element={<Home />} />
                     <Route path="/Zeum" element={<Home />} />
                     <Route path="/Zeum/:eventId" element={<Scene />} />
                 </Routes>
