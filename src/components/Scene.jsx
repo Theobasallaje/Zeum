@@ -38,7 +38,7 @@ export const Scene = () => {
     }, []);
 
     const handleExit = useCallback(() => {
-        navigate("/Zeum");
+        navigate("/");
     }, [navigate]);
 
     const isImagesFound = useMemo(() => images?.length > 0, [images]);
