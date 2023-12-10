@@ -1,15 +1,21 @@
 // @ts-nocheck
-import React, { useRef, useCallback } from "react";
 import { usePlane, useBox } from "@react-three/cannon";
 import { TextureLoader } from "three";
-import { Html, GradientTexture } from "@react-three/drei";
+import { GradientTexture } from "@react-three/drei";
 import Particles from "react-particles";
 import { loadSlim } from "tsparticles-slim";
+import { useZeumStore } from "./ZeumStore";
+import { useFrame } from "@react-three/fiber";
+import React, { useRef, useMemo, useCallback } from "react";
+import { Object3D } from "three";
 
 export const MainFloor = ({ height, width }) => {
-    const [ref] = usePlane(() => ({ rotation: [-Math.PI / 2, 0, 0], receiveShadow: true }), useRef(null));
+    const [ref] = usePlane(
+        () => ({ position: [0, 0, 0], rotation: [-Math.PI / 2, 0, 0], receiveShadow: true }),
+        useRef(null)
+    );
     return (
-        <mesh ref={ref} receiveShadow castShadow type="fixed">
+        <mesh ref={ref} position={[0, 0, 0]} receiveShadow castShadow type="fixed">
             <planeGeometry args={[width, height]} />
             <meshStandardMaterial>
                 <GradientTexture
@@ -35,16 +41,6 @@ export const MainFloor = ({ height, width }) => {
     );
 };
 
-export const Plane = (props) => {
-    const [ref] = usePlane(() => ({ ...props }), useRef(null));
-    return (
-        <mesh ref={ref} receiveShadow castShadow type="fixed">
-            <planeGeometry args={[50, 0, 0]} />
-            <meshStandardMaterial color="white" />
-        </mesh>
-    );
-};
-
 export const ExitPlane = ({ roomHeight, handleExit }) => {
     const [ref] = useBox(
         () => ({
@@ -66,46 +62,94 @@ export const Wall = (props) => {
         <group>
             <mesh ref={wallRef} type="fixed" receiveShadow castShadow>
                 <boxGeometry args={[props.width, props.height, props.depth]} />
-                <meshStandardMaterial color="gray" />
+                <meshStandardMaterial color="#787878" />
             </mesh>
         </group>
     );
 };
 
-export const DisplayWall = (props) => {
-    const artTexture = new TextureLoader().load(props?.artifact ?? <Html>Could not find an image</Html>);
+export const CeilingPlane = () => {
+    const [ref] = usePlane(
+        () => ({ rotation: [-Math.PI / 2, 0, 0], position: [0, 10, 0], receiveShadow: true }),
+        useRef(null)
+    );
+    return (
+        <mesh ref={ref} receiveShadow castShadow type="fixed">
+            <planeGeometry args={[50, 50, 0]} />
+            <meshStandardMaterial color="white" />
+        </mesh>
+    );
+};
 
-    const [wallRef] = useBox(() => ({ ...props, type: "Static" }), useRef(null));
+export const DisplayWall = ({ artifact, args, position, width, height, depth }) => {
+    // use ref here to prevent texture from reloading every time player is close to the artifact
+    const artTexture = useRef(new TextureLoader().load(artifact));
+    const [wallRef] = useBox(() => ({ position, width, height, depth, type: "Static" }), useRef(null));
     const [frameRef] = useBox(
-        () => ({ ...props, position: [props.position[0], props.position[1], props.position[2] - 0.2], type: "Static" }),
+        () => ({ args, width, height, depth, position: [position[0], position[1], position[2] - 0.2], type: "Static" }),
         useRef(null)
     );
     const [canvasRef] = useBox(
-        () => ({ ...props, position: [props.position[0], props.position[1], props.position[2] - 0.5], type: "Static" }),
+        () => ({
+            args,
+            width,
+            height,
+            depth,
+            position: [position[0], position[1], position[2] - 0.5],
+            type: "Static",
+        }),
         useRef(null)
     );
+    const [contextActionRangeRef] = useBox(
+        () => ({
+            args: [width, height, depth + 10],
+            type: "Static",
+            rotation: [-Math.PI / 2, 0, 0],
+            collisionResponse: false,
+            position: [position[0], 1, position[2] - 6],
+            onCollide: handlePlayerClose,
+            onCollideEnd: handlePlayerFar,
+        }),
+        useRef(null)
+    );
+
+    const { setIsPlayerInRangeForContextAction, deactivateCloseUp, setArtifactPosition } = useZeumStore();
+
+    const handlePlayerClose = useCallback(
+        (e) => {
+            setIsPlayerInRangeForContextAction(true);
+
+            const viewingPosition = [position[0], 1, position[2] - 8];
+            setArtifactPosition(viewingPosition);
+        },
+        [position, setArtifactPosition, setIsPlayerInRangeForContextAction]
+    );
+
+    const handlePlayerFar = useCallback(() => {
+        deactivateCloseUp();
+    }, [deactivateCloseUp]);
 
     return (
         <group>
             <pointLight
-                position={[props.position[0], props.position[1], props.position[2] - 5]}
+                position={[position[0], position[1], position[2] - 5]}
                 rotation={[-Math.PI / 2 + (25 * Math.PI) / 180, 0, 0]}
                 color="white"
                 intensity={25}
                 castShadow
             />
-
+            <mesh ref={contextActionRangeRef}></mesh>
             <mesh ref={wallRef} type="fixed" receiveShadow castShadow>
-                <boxGeometry args={[props.width, props.height, props.depth]} />
+                <boxGeometry args={[width, height, depth]} />
                 <meshStandardMaterial color="#6F7378" />
             </mesh>
             <mesh ref={frameRef} receiveShadow castShadow>
-                <boxGeometry args={[props.width / 1.2, props.height / 1.45, props.depth]} />
+                <boxGeometry args={[width / 1.2, height / 1.45, depth]} />
                 <meshStandardMaterial color="black" map={undefined} />
             </mesh>
             <mesh ref={canvasRef} receiveShadow castShadow>
-                <boxGeometry args={[props.width / 1.25, props.height / 1.5, props.depth - 0.5]} />
-                <meshStandardMaterial attach="material" map={artTexture} />
+                <boxGeometry args={[width / 1.25, height / 1.5, depth - 0.5]} />
+                <meshStandardMaterial attach="material" map={artTexture.current} />
             </mesh>
         </group>
     );
@@ -113,7 +157,6 @@ export const DisplayWall = (props) => {
 
 export const Overlay = () => {
     const particlesInit = useCallback(async (engine) => {
-        console.log(engine);
         // you can initiate the tsParticles instance (engine) here, adding custom shapes or presets
         // this loads the tsparticles package bundle, it's the easiest method for getting everything ready
         // starting from v2 you can add only the features you need reducing the bundle size
@@ -166,5 +209,60 @@ export const Overlay = () => {
                 detectRetina: true,
             }}
         />
+    );
+};
+
+export const Dust = () => {
+    const count = 1500;
+    const mesh = useRef();
+
+    const particles = useMemo(() => {
+        const temp = [];
+        for (let i = 0; i < count; i++) {
+            const time = Math.random() * 100;
+            const factor = Math.random() * 50 + 20;
+            const speed = Math.random() * 0.0009;
+            const x = Math.random() * 100 - 50;
+            const y = Math.random() * 200 - 100;
+            const z = Math.random() * 100 - 50;
+
+            temp.push({ time, factor, speed, x, y, z });
+        }
+        return temp;
+    }, []);
+
+    const dummy = useMemo(() => new Object3D(), []);
+
+    useFrame(() => {
+        particles.forEach((particle, index) => {
+            let { factor, speed, x, y, z } = particle;
+
+            // Update the particle time
+            const t = (particle.time += speed);
+
+            // Calculate the falling effect by reducing the y position over time
+            y -= speed;
+
+            // Update the particle position based on the time and falling effect
+            dummy.position.set(
+                x + Math.cos((t / 10) * factor),
+                y + Math.sin((t / 5) * factor),
+                z + Math.sin((t / 10) * factor)
+            );
+
+            dummy.updateMatrix();
+
+            // Apply the matrix to the instanced item
+            mesh.current.setMatrixAt(index, dummy.matrix);
+        });
+
+        mesh.current.instanceMatrix.needsUpdate = true;
+    });
+
+    return (
+        <instancedMesh ref={mesh} args={[null, null, count]} receiveShadow castShadow>
+            <dodecahedronGeometry args={[0.025, 0]} />
+            <meshPhongMaterial color="#ffffff" />
+        </instancedMesh>
     );
 };
