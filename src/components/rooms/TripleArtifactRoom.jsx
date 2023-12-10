@@ -1,5 +1,5 @@
 import React from "react";
-import { Wall, MainFloor, DisplayWall } from "../Environment";
+import { Wall, MainFloor, DisplayWall, CeilingPlane } from "../Environment";
 
 export const TripleArtifactRoom = ({ roomDepth, roomWidth, artifacts }) => {
     return (

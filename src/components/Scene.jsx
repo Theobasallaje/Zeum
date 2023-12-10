@@ -1,72 +1,57 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Canvas } from "@react-three/fiber";
 import { Physics } from "@react-three/cannon";
-import { ExitPlane } from "./Environment";
+import { ExitPlane, Dust } from "./Environment";
 import { PlayerControls } from "./PlayerControls";
 import { SingleArtifactRoom } from "./rooms/SingleArtifactRoom";
 import { DoubleArtifactRoom } from "./rooms/DoubleArtifactRoom";
 import { TripleArtifactRoom } from "./rooms/TripleArtifactRoom";
-
-import { Dust } from "./Hooks";
 import { findImageUrlsInEvent } from "../utils/Utils";
 import { useNostrEvents } from "nostr-react";
 import { BackdropLoader } from "./BackdropLoader";
-import { Container, Stack, Button } from "@mui/material";
+import { Button, Box, IconButton } from "@mui/material";
 import { toast } from "react-toastify";
+import { Close, Visibility } from "@mui/icons-material";
+import { useZeumStore } from "./ZeumStore";
+import { ContextActions } from "./ContextActions";
+import { useIsTouchScreen } from "./Hooks";
 
 export const Scene = () => {
+    const mainCameraRef = useRef(null);
+
+    const [isLoading, setIsLoading] = useState(false);
     const { eventId } = useParams();
     const navigate = useNavigate();
     const [images, setImages] = useState([]);
-
+    const { setIsContextActionActive } = useZeumStore();
     const { events, isLoading: isLoadingNostrEvent } = useNostrEvents({
         filter: {
             ids: eventId ? [eventId] : undefined,
         },
         enabled: !!eventId,
     });
-
+    const isArtifactsFound = useMemo(() => images?.length > 0, [images]);
     const roomDepth = useMemo(() => {
         if (images?.length === 1) return 50;
         if (images?.length === 2) return 62.5;
         if (images?.length >= 3) return 78.125;
     }, [images]);
 
-    const isTouchScreen = useMemo(() => {
-        return "maxTouchPoints" in navigator ? navigator.maxTouchPoints > 0 : false;
-    }, []);
-
     const handleExit = useCallback(() => {
         navigate("/");
     }, [navigate]);
 
-    const isImagesFound = useMemo(() => images?.length > 0, [images]);
+    const handleStartContextAction = useCallback(() => {
+        setIsContextActionActive(true);
+    }, [setIsContextActionActive]);
 
-    const handleShare = useCallback(() => {
-        const currentUrl = window.location.href;
-        if (isTouchScreen) {
-            navigator
-                .share({ url: currentUrl })
-                .then(() => {
-                    console.log("Sharing success");
-                })
-                .catch((error) => {
-                    console.error("Sharing failed:", error);
-                });
-        } else {
-            navigator.clipboard
-                .writeText(currentUrl)
-                .then(() => {
-                    toast.success("Copied!");
-                })
-                .catch((error) => {
-                    toast.error("Failed to copy to clipboard!");
-                });
-        }
-    }, []);
-
-    const [isLoading, setIsLoading] = useState(false);
+    const handleEndContextAction = useCallback(
+        (e) => {
+            setIsContextActionActive(false);
+        },
+        [setIsContextActionActive]
+    );
 
     useEffect(() => {
         const selectedEvent = events?.find((event) => event?.id === eventId);
@@ -78,7 +63,6 @@ export const Scene = () => {
 
     useEffect(() => {
         let timer;
-
         if (isLoadingNostrEvent) {
             setIsLoading(true);
         } else {
@@ -93,16 +77,14 @@ export const Scene = () => {
 
     return (
         <>
-            {(isLoading || !isImagesFound) && <BackdropLoader isLoading={isLoading} isImagesFound={isImagesFound} />}
-            {isImagesFound && (
+            {isLoading || !isArtifactsFound ? (
+                <BackdropLoader isLoading={isLoading} isImagesFound={isArtifactsFound} />
+            ) : (
                 <>
-                    <Container maxWidth="xl">
-                        <Stack direction="row-reverse" marginTop={2}>
-                            <Button color="primary" disableElevation variant="contained" onClick={handleShare}>
-                                Share
-                            </Button>
-                        </Stack>
-                    </Container>
+                    <ContextActions
+                        handleStartContextAction={handleStartContextAction}
+                        handleEndContextAction={handleEndContextAction}
+                    />
                     <Canvas
                         dpr={[1, 2]}
                         camera={{ far: 100, near: 1, position: [0, 10, -10], zoom: 50, fov: 50 }}
@@ -110,7 +92,7 @@ export const Scene = () => {
                         shadows
                     >
                         <ambientLight intensity={2} position={[0, 10, 4]} />
-                        <Physics iterations={15} gravity={[0, -15, 0]}>
+                        <Physics iterations={15}>
                             <Dust />
                             {images?.length === 1 && (
                                 <SingleArtifactRoom artifact={images[0]} roomDepth={roomDepth} roomWidth={50} />
@@ -121,7 +103,7 @@ export const Scene = () => {
                             {images?.length >= 3 && (
                                 <TripleArtifactRoom artifacts={images} roomDepth={roomDepth} roomWidth={50} />
                             )}
-                            <PlayerControls showJoystick={isTouchScreen} startPosition={[0, 0, -(roomDepth / 2.5)]} />
+                            <PlayerControls startPosition={[0, 0, -(roomDepth / 2.5)]} mainCameraRef={mainCameraRef} />
                             <ExitPlane roomHeight={roomDepth} handleExit={handleExit} />
                         </Physics>
                     </Canvas>
