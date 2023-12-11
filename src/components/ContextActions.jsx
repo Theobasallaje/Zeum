@@ -41,7 +41,16 @@ export const ContextActions = ({ handleStartContextAction, handleEndContextActio
                     </Button>
                 ) : null}
             </Box>
-            <Box sx={{ position: "absolute", bottom: 0, left: "50vw", zIndex: 1500, m: 2 }}>
+            <Box
+                sx={{
+                    position: "absolute",
+                    bottom: 0,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    zIndex: 1500,
+                    marginBottom: 2,
+                }}
+            >
                 {isPlayerInRangeForContextAction && !isContextActionActive ? (
                     <IconButton
                         title="Get a closer look"
