@@ -6,7 +6,7 @@ import Particles from "react-particles";
 import { loadSlim } from "tsparticles-slim";
 import { useZeumStore } from "./ZeumStore";
 import { useFrame } from "@react-three/fiber";
-import React, { useRef, useMemo, useCallback, useEffect } from "react";
+import React, { useRef, useMemo, useCallback, useEffect, useReducer } from "react";
 import { Object3D } from "three";
 import { useImageSize } from "react-image-size";
 
@@ -84,6 +84,8 @@ export const CeilingPlane = () => {
 
 export const DisplayWall = ({ artifact, args, position, width, height, depth }) => {
     const artifactRef = useRef(artifact);
+    const [, forceUpdate] = useReducer((x) => x + 1, 0);
+
     const [wallRef] = useBox(() => ({ position, width, height, depth, type: "Static" }), useRef(null));
     const [contextActionRangeRef] = useBox(
         () => ({
@@ -112,6 +114,11 @@ export const DisplayWall = ({ artifact, args, position, width, height, depth }) 
         deactivateCloseUp();
     }, [deactivateCloseUp]);
 
+    useEffect(() => {
+        //This is not ideal but needed to ensure correct aspect ratio on first frame
+        forceUpdate();
+    });
+
     return (
         <group>
             <pointLight
@@ -134,7 +141,7 @@ export const DisplayWall = ({ artifact, args, position, width, height, depth }) 
                 style={{ backgroundColor: "#63686e" }}
             >
                 <img
-                    src={artifactRef?.current ?? artifact}
+                    src={artifactRef?.current}
                     alt="Art Display"
                     style={{
                         height: "25vh",
