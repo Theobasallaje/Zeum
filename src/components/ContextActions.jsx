@@ -61,7 +61,7 @@ export const ContextActions = ({ handleStartContextAction, handleEndContextActio
                     </IconButton>
                 ) : null}
             </Box>
-            <Box sx={{ position: "absolute", bottom: 0, right: isTouchScreen ? "10vw" : "35vw", zIndex: 1500, m: 2 }}>
+            <Box sx={{ position: "absolute", bottom: 0, right: isTouchScreen ? "10vw" : "35vw", zIndex: 9999, m: 2 }}>
                 {isContextActionActive ? (
                     <IconButton title="Close" onClick={handleEndContextAction} sx={{ backgroundColor: "white" }}>
                         <Close fontSize="large" />

@@ -1,13 +1,14 @@
 // @ts-nocheck
 import { usePlane, useBox } from "@react-three/cannon";
 import { TextureLoader } from "three";
-import { GradientTexture } from "@react-three/drei";
+import { GradientTexture, Html } from "@react-three/drei";
 import Particles from "react-particles";
 import { loadSlim } from "tsparticles-slim";
 import { useZeumStore } from "./ZeumStore";
 import { useFrame } from "@react-three/fiber";
-import React, { useRef, useMemo, useCallback } from "react";
+import React, { useRef, useMemo, useCallback, useEffect } from "react";
 import { Object3D } from "three";
+import { useImageSize } from "react-image-size";
 
 export const MainFloor = ({ height, width }) => {
     const [ref] = usePlane(
@@ -82,24 +83,8 @@ export const CeilingPlane = () => {
 };
 
 export const DisplayWall = ({ artifact, args, position, width, height, depth }) => {
-    // use ref here to prevent texture from reloading every time player is close to the artifact
-    const artTexture = useRef(new TextureLoader().load(artifact));
+    const artifactRef = useRef(artifact);
     const [wallRef] = useBox(() => ({ position, width, height, depth, type: "Static" }), useRef(null));
-    const [frameRef] = useBox(
-        () => ({ args, width, height, depth, position: [position[0], position[1], position[2] - 0.2], type: "Static" }),
-        useRef(null)
-    );
-    const [canvasRef] = useBox(
-        () => ({
-            args,
-            width,
-            height,
-            depth,
-            position: [position[0], position[1], position[2] - 0.5],
-            type: "Static",
-        }),
-        useRef(null)
-    );
     const [contextActionRangeRef] = useBox(
         () => ({
             args: [width, height, depth + 10],
@@ -112,9 +97,7 @@ export const DisplayWall = ({ artifact, args, position, width, height, depth }) 
         }),
         useRef(null)
     );
-
     const { setIsPlayerInRangeForContextAction, deactivateCloseUp, setArtifactPosition } = useZeumStore();
-
     const handlePlayerClose = useCallback(
         (e) => {
             setIsPlayerInRangeForContextAction(true);
@@ -143,14 +126,22 @@ export const DisplayWall = ({ artifact, args, position, width, height, depth }) 
                 <boxGeometry args={[width, height, depth]} />
                 <meshStandardMaterial color="#6F7378" />
             </mesh>
-            <mesh ref={frameRef} receiveShadow castShadow>
-                <boxGeometry args={[width / 1.2, height / 1.45, depth]} />
-                <meshStandardMaterial color="black" map={undefined} />
-            </mesh>
-            <mesh ref={canvasRef} receiveShadow castShadow>
-                <boxGeometry args={[width / 1.25, height / 1.5, depth - 0.5]} />
-                <meshStandardMaterial attach="material" map={artTexture.current} />
-            </mesh>
+            <Html
+                position={[position[0], position[1], position[2] - 0.3]}
+                transform
+                occlude="blending"
+                distanceFactor={0}
+                style={{ backgroundColor: "#63686e" }}
+            >
+                <img
+                    src={artifactRef?.current ?? artifact}
+                    alt="Art Display"
+                    style={{
+                        height: "25vh",
+                        border: "3px solid #2a2a2a",
+                    }}
+                />
+            </Html>
         </group>
     );
 };

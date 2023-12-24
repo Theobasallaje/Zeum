@@ -81,15 +81,12 @@ export const Scene = () => {
                 <BackdropLoader isLoading={isLoading} isImagesFound={isArtifactsFound} />
             ) : (
                 <>
-                    <ContextActions
-                        handleStartContextAction={handleStartContextAction}
-                        handleEndContextAction={handleEndContextAction}
-                    />
                     <Canvas
                         dpr={[1, 2]}
                         camera={{ far: 100, near: 1, position: [0, 10, -10], zoom: 50, fov: 50 }}
                         orthographic
                         shadows
+                        style={{ zIndex: 0 }}
                     >
                         <ambientLight intensity={2} position={[0, 10, 4]} />
                         <Physics iterations={15}>
@@ -107,6 +104,10 @@ export const Scene = () => {
                             <ExitPlane roomHeight={roomDepth} handleExit={handleExit} />
                         </Physics>
                     </Canvas>
+                    <ContextActions
+                        handleStartContextAction={handleStartContextAction}
+                        handleEndContextAction={handleEndContextAction}
+                    />
                 </>
             )}
         </>
