@@ -10,12 +10,8 @@ import { TripleArtifactRoom } from "./rooms/TripleArtifactRoom";
 import { findImageUrlsInEvent } from "../utils/Utils";
 import { useNostrEvents } from "nostr-react";
 import { BackdropLoader } from "./BackdropLoader";
-import { Button, Box, IconButton } from "@mui/material";
-import { toast } from "react-toastify";
-import { Close, Visibility } from "@mui/icons-material";
 import { useZeumStore } from "./ZeumStore";
 import { ContextActions } from "./ContextActions";
-import { useIsTouchScreen } from "./Hooks";
 
 export const Scene = () => {
     const mainCameraRef = useRef(null);
@@ -78,7 +74,7 @@ export const Scene = () => {
     return (
         <>
             {isLoading || !isArtifactsFound ? (
-                <BackdropLoader isLoading={isLoading} isImagesFound={isArtifactsFound} />
+                <BackdropLoader loadingText="Loading your zeum" isLoading={isLoading} isImagesFound={isArtifactsFound} />
             ) : (
                 <>
                     <Canvas

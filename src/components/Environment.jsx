@@ -1,14 +1,10 @@
 // @ts-nocheck
 import { usePlane, useBox } from "@react-three/cannon";
-import { TextureLoader } from "three";
 import { GradientTexture, Html } from "@react-three/drei";
-import Particles from "react-particles";
-import { loadSlim } from "tsparticles-slim";
 import { useZeumStore } from "./ZeumStore";
 import { useFrame } from "@react-three/fiber";
 import React, { useRef, useMemo, useCallback, useEffect, useReducer } from "react";
 import { Object3D } from "three";
-import { useImageSize } from "react-image-size";
 
 export const MainFloor = ({ height, width }) => {
     const [ref] = usePlane(
@@ -86,7 +82,7 @@ export const DisplayWall = ({ artifact, args, position, width, height, depth }) 
     const artifactRef = useRef(artifact);
     const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
-    const [wallRef] = useBox(() => ({ position, width, height, depth, type: "Static" }), useRef(null));
+    const [wallRef] = useBox(() => ({ position, args, width, height, depth, type: "Static" }), useRef(null));
     const [contextActionRangeRef] = useBox(
         () => ({
             args: [width, height, depth + 10],
@@ -150,63 +146,6 @@ export const DisplayWall = ({ artifact, args, position, width, height, depth }) 
                 />
             </Html>
         </group>
-    );
-};
-
-export const Overlay = () => {
-    const particlesInit = useCallback(async (engine) => {
-        // you can initiate the tsParticles instance (engine) here, adding custom shapes or presets
-        // this loads the tsparticles package bundle, it's the easiest method for getting everything ready
-        // starting from v2 you can add only the features you need reducing the bundle size
-        //await loadFull(engine);
-        await loadSlim(engine);
-    }, []);
-
-    const particlesLoaded = useCallback(async (container) => {
-        await console.log(container);
-    }, []);
-
-    return (
-        <Particles
-            id="tsparticles"
-            init={particlesInit}
-            loaded={particlesLoaded}
-            options={{
-                fpsLimit: 120,
-
-                particles: {
-                    color: {
-                        value: "#ffffff",
-                    },
-
-                    move: {
-                        direction: "bottom",
-                        enable: true,
-
-                        random: false,
-                        speed: 0.8,
-                        straight: false,
-                    },
-                    number: {
-                        density: {
-                            enable: true,
-                            area: 1500,
-                        },
-                        value: 80,
-                    },
-                    opacity: {
-                        value: 0.5,
-                    },
-                    shape: {
-                        type: "circle",
-                    },
-                    size: {
-                        value: { min: 0.1, max: 1 },
-                    },
-                },
-                detectRetina: true,
-            }}
-        />
     );
 };
 
