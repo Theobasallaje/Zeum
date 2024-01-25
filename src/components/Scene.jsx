@@ -12,6 +12,7 @@ import { useNostrEvents } from "nostr-react";
 import { BackdropLoader } from "./BackdropLoader";
 import { useZeumStore } from "./ZeumStore";
 import { ContextActions } from "./ContextActions";
+import { Box } from "@mui/material";
 
 export const Scene = () => {
     const mainCameraRef = useRef(null);
@@ -74,7 +75,11 @@ export const Scene = () => {
     return (
         <>
             {isLoading || !isArtifactsFound ? (
-                <BackdropLoader loadingText="Loading your zeum" isLoading={isLoading} isImagesFound={isArtifactsFound} />
+                <BackdropLoader
+                    loadingText="Loading your zeum"
+                    isLoading={isLoading}
+                    isImagesFound={isArtifactsFound}
+                />
             ) : (
                 <>
                     <Canvas
@@ -104,6 +109,9 @@ export const Scene = () => {
                         handleStartContextAction={handleStartContextAction}
                         handleEndContextAction={handleEndContextAction}
                     />
+                    <Box id="mobileInterface" className="noSelect">
+                        <Box id="joystickWrapper1"></Box>
+                    </Box>
                 </>
             )}
         </>

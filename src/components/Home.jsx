@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
     Button,
     Container,
@@ -16,15 +17,17 @@ import {
     DialogContent,
     Box,
 } from "@mui/material";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { ArrowForward, FavoriteBorder } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useReadEvent, useNostrEventIdDecode, useNostrReactions, useNostrProfile } from "./Hooks";
-import { isNullOrEmpty } from "../utils/Utils";
+import { Zap, createZap, isNullOrEmpty } from "../utils/Utils";
 import ZeumInputTextField from "./styled/ZeumInputTextField";
 import { useNostr, useProfile } from "nostr-react";
-import { nip19 } from "nostr-tools";
+import { nip19, nip57 } from "nostr-tools";
 import { Lightning } from "@phosphor-icons/react";
+import { useZeumStore } from "./ZeumStore";
+import { toast } from "react-toastify";
 
 export const Home = () => {
     return (
@@ -39,7 +42,7 @@ export const Home = () => {
                 </Grid>
                 <Grid item xs={12} marginY={10}>
                     <CreatedBy />
-                    <Grid container textAlign="center" justifyContent="center" marginTop={3}>
+                    <Grid container textAlign="center" justifyContent="center" marginTop={4}>
                         <SupportUs npub="npub1xk50nsp89sge5cs0glq9tjxm885lsp077xez6zm6g2ccjdga4enqnkmr0f" />
                     </Grid>
                 </Grid>
@@ -72,10 +75,10 @@ const ZeumHeader = () => {
                 </Typography>
             </Grid>
             <Grid item xs={12} textAlign="center" marginTop={3}>
-                <Typography variant="subtitle2">The internet museum</Typography>
+                <Typography fontSize="16">The internet museum</Typography>
             </Grid>
-            <Grid item xs={12} marginTop={1}justifyContent="center" textAlign="center">
-                <Divider sx={{ maxWidth: "300px", marginLeft: "auto", marginRight: "auto"}}  />
+            <Grid item xs={12} marginTop={3} justifyContent="center" textAlign="center">
+                <Divider sx={{ maxWidth: "300px", marginLeft: "auto", marginRight: "auto" }} />
             </Grid>
         </Grid>
     );
@@ -101,7 +104,8 @@ const ZeumInput = () => {
                 hiddenLabel
                 onChange={handleEventIdChange}
                 value={eventIdInput}
-                placeholder="Enter nevent ID"
+                placeholder="Enter the ID of a note
+                with images"
                 error={!isValid}
                 helperText={validationError?.message}
                 fullWidth
@@ -226,107 +230,162 @@ const CreatedBy = () => {
 
 const SupportUs = ({ npub }) => {
     const pubkey = nip19.decode(npub)?.data;
-    // @ts-ignore
-    const { data: profile } = useProfile({ pubkey, enabled: !!pubkey });
+    const { signedInAs } = useZeumStore();
     const { connectedRelays, publish } = useNostr();
     const [showZapModal, setShowZapModal] = useState(false);
+    const [showSignInModal, setShowSignInModal] = useState(false);
     const [amount, setAmount] = useState(0);
     const [comment, setComment] = useState("");
-    const handleModalClose = () => setShowZapModal(false);
-    const handleClick = useCallback(() => setShowZapModal(true), []);
 
-    const handleZap = useCallback(() => {
-        //nip57.makeZapRequest({ profile: npub, event: "", amount, comment, relays: connectedRelays.map((relay) => relay.url)})
-    }, []);
+    const handleClick = useCallback(
+        () => (!!signedInAs ? setShowZapModal(true) : setShowSignInModal(true)),
+        [signedInAs]
+    );
 
     return (
         <>
-            <Dialog open={showZapModal} onClose={handleModalClose} fullWidth>
-                <DialogTitle>
-                    <Grid container item xs={12} alignItems="center">
-                        <Avatar src={profile?.picture} sx={{ marginRight: 1 }} /> Send sats to @{profile?.name}
-                    </Grid>
-                </DialogTitle>
-                <DialogContent>
-                    <Typography variant="subtitle1">Zap amount in sats</Typography>
-                    <Grid container spacing={1} justifyContent="center" marginBottom={1}>
-                        <Grid item xs={12} md={4}>
-                            <Button
-                                variant={amount === 1000 ? "contained" : "outlined"}
-                                onClick={() => setAmount(1000)}
-                                fullWidth
-                            >
-                                1k
-                            </Button>
-                        </Grid>
-                        <Grid item xs={12} md={4}>
-                            <Button
-                                variant={amount === 5000 ? "contained" : "outlined"}
-                                onClick={() => setAmount(5000)}
-                                fullWidth
-                            >
-                                5k
-                            </Button>
-                        </Grid>
-                        <Grid item xs={12} md={4}>
-                            <Button
-                                variant={amount === 10000 ? "contained" : "outlined"}
-                                onClick={() => setAmount(10000)}
-                                fullWidth
-                            >
-                                10k
-                            </Button>
-                        </Grid>
-                        <Grid item xs={12} md={4}>
-                            <Button
-                                variant={amount === 20000 ? "contained" : "outlined"}
-                                onClick={() => setAmount(20000)}
-                                fullWidth
-                            >
-                                20k
-                            </Button>
-                        </Grid>
-                        <Grid item xs={12} md={4}>
-                            <Button
-                                variant={amount === 100000 ? "contained" : "outlined"}
-                                onClick={() => setAmount(100000)}
-                                fullWidth
-                            >
-                                100k
-                            </Button>
-                        </Grid>
-                        <Grid item xs={12} md={4}>
-                            <Button
-                                variant={amount === 500000 ? "contained" : "outlined"}
-                                onClick={() => setAmount(500000)}
-                                fullWidth
-                            >
-                                500k
-                            </Button>
-                        </Grid>
-                    </Grid>
-
-                    <TextField
-                        hiddenLabel
-                        placeholder="Comment"
-                        type="text"
-                        fullWidth
-                        variant="outlined"
-                        onChange={(e) => setComment(e.target.value)}
-                        multiline
-                        sx={{ marginBottom: 2 }}
-                    />
-
-                    <Button variant="contained" onClick={handleZap} sx={{ textTransform: "none" }} fullWidth>
-                        <Lightning weight="fill" /> <Typography>Zap @{profile?.name}</Typography>
-                    </Button>
-                </DialogContent>
-            </Dialog>
-
+            <ZapDialog show={showZapModal} setShow={setShowZapModal} pubkey={pubkey} />
+            <SignInDialog show={showSignInModal} setShow={setShowSignInModal} />
             <Button variant="outlined" endIcon={<FavoriteBorder />} onClick={handleClick}>
                 <Typography fontWeight={600}>Support</Typography>
             </Button>
         </>
+    );
+};
+
+const SignInDialog = ({ show, setShow }) => {
+    const { signedInAs, setSignedInAs } = useZeumStore();
+    const handleClose = () => setShow(false);
+
+    const handleSingInWithExtension = useCallback(async () => {
+        const nostrExtension = window?.nostr ?? null;
+
+        if (!signedInAs && nostrExtension) {
+            try {
+                const publicKey = (await nostrExtension?.getPublicKey()) ?? null;
+                setSignedInAs(publicKey);
+            } catch (e) {
+                console.error(e);
+            } 
+        }
+    }, [setSignedInAs, signedInAs]);
+
+    return (
+        <Dialog open={show && !signedInAs} onClose={handleClose} fullWidth>
+            <DialogTitle>
+                <Grid container item xs={12} alignItems="center">
+                    <Avatar src="apple-touch-icon.png" sx={{ marginRight: 1 }} /> Sign In
+                </Grid>
+            </DialogTitle>
+            <DialogContent>
+                <Stack direction="column">
+                    <Button variant="contained" sx={{ marginTop: 3 }} onClick={handleSingInWithExtension}>
+                        Sign in with extension
+                    </Button>
+                </Stack>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
+const ZapDialog = ({ pubkey, show, setShow }) => {
+    const { signedInAs, nostrExtension } = useZeumStore();
+    const { connectedRelays } = useNostr();
+    const [amount, setAmount] = useState(0);
+    const [comment, setComment] = useState("");
+    const { data: profile } = useProfile({ pubkey, enabled: !!pubkey });
+    const handleZapModalClose = () => setShow(false);
+
+    const handleZap = useCallback(async () => {
+        const zapInvoice = await Zap({ comment, relays: connectedRelays?.map((relay) => relay?.url), amount, pubkey: signedInAs, target: profile, nostrExtension });
+        if (!zapInvoice) toast.error("Error zapping Zeum.space");
+        toast.success(`Zapped Zeum.space ${amount} sats`);
+        setShow(false);
+    }, [comment, connectedRelays, amount, signedInAs, profile, nostrExtension, setShow]);
+
+
+    return (
+        <Dialog open={show} onClose={handleZapModalClose} fullWidth>
+            <DialogTitle>
+                <Grid container item xs={12} alignItems="center">
+                    <Avatar src="apple-touch-icon.png" sx={{ marginRight: 1 }} /> Send sats to Zeum.space
+                </Grid>
+            </DialogTitle>
+            <DialogContent>
+                <Typography variant="subtitle1">Zap amount in sats</Typography>
+                <Grid container spacing={1} justifyContent="center" marginBottom={1}>
+                    <Grid item xs={12} md={4}>
+                        <Button
+                            variant={amount === 1000 ? "contained" : "outlined"}
+                            onClick={() => setAmount(1000)}
+                            fullWidth
+                        >
+                            1k
+                        </Button>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                        <Button
+                            variant={amount === 5000 ? "contained" : "outlined"}
+                            onClick={() => setAmount(5000)}
+                            fullWidth
+                        >
+                            5k
+                        </Button>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                        <Button
+                            variant={amount === 10000 ? "contained" : "outlined"}
+                            onClick={() => setAmount(10000)}
+                            fullWidth
+                        >
+                            10k
+                        </Button>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                        <Button
+                            variant={amount === 20000 ? "contained" : "outlined"}
+                            onClick={() => setAmount(20000)}
+                            fullWidth
+                        >
+                            20k
+                        </Button>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                        <Button
+                            variant={amount === 100000 ? "contained" : "outlined"}
+                            onClick={() => setAmount(100000)}
+                            fullWidth
+                        >
+                            100k
+                        </Button>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                        <Button
+                            variant={amount === 500000 ? "contained" : "outlined"}
+                            onClick={() => setAmount(500000)}
+                            fullWidth
+                        >
+                            500k
+                        </Button>
+                    </Grid>
+                </Grid>
+
+                <TextField
+                    hiddenLabel
+                    placeholder="Comment"
+                    type="text"
+                    fullWidth
+                    variant="outlined"
+                    onChange={(e) => setComment(e.target.value)}
+                    multiline
+                    sx={{ marginBottom: 2 }}
+                />
+
+                <Button variant="contained" onClick={handleZap} sx={{ textTransform: "none" }} fullWidth>
+                    <Lightning weight="fill" /> <Typography>Zap Zeum.space</Typography>
+                </Button>
+            </DialogContent>
+        </Dialog>
     );
 };
 
@@ -337,8 +396,15 @@ const NostrFeaturedAvatar = ({ npub }) => {
 
     return (
         <Stack>
-            <Box component="a" href={`https://primal.net/p/${profile?.npub}`} target="_blank" rel="noopener noreferrer" sx={{ textDecoration: "none"}}>
-                <Avatar sx={{ width: 100, height: 100, margin: "auto" }} src={profile?.picture} />
+            <Box>
+                <Avatar
+                    component="a"
+                    href={profile?.npub ? `https://primal.net/p/${profile?.npub}` : undefined}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{ textDecoration: "none", width: 100, height: 100, margin: "auto" }}
+                    src={profile?.picture}
+                />
                 <Typography>{profile?.name}</Typography>
             </Box>
         </Stack>
