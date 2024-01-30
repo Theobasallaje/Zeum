@@ -234,16 +234,12 @@ const CreatedBy = () => {
 
 const SupportUs = ({ npub }) => {
     const pubkey = nip19.decode(npub)?.data;
-    const { signedInAs } = useZeumStore();
     const [showZapModal, setShowZapModal] = useState(false);
     const [showSignInModal, setShowSignInModal] = useState(false);
     const [invoice, setInvoice] = useState(null);
     const [showInvoiceDialog, setShowInvoiceDialog] = useState(false);
 
-    const handleClick = useCallback(
-        () => (!!signedInAs ? setShowZapModal(true) : setShowSignInModal(true)),
-        [signedInAs]
-    );
+    const handleClick = useCallback(() => setShowZapModal(true), []);
 
     return (
         <>
@@ -256,7 +252,12 @@ const SupportUs = ({ npub }) => {
             />
             <SignInDialog show={showSignInModal} setShow={setShowSignInModal} />
             {invoice ? (
-                <InvoiceDialog invoice={invoice} setInvoice={setInvoice} show={showInvoiceDialog} setShow={setShowInvoiceDialog} />
+                <InvoiceDialog
+                    invoice={invoice}
+                    setInvoice={setInvoice}
+                    show={showInvoiceDialog}
+                    setShow={setShowInvoiceDialog}
+                />
             ) : null}
             <Button variant="outlined" endIcon={<FavoriteBorder />} onClick={handleClick}>
                 <Typography fontWeight={600}>Support</Typography>
@@ -330,12 +331,28 @@ const ZapDialog = ({ pubkey, show, setShow, setInvoice, setShowInvoiceDialog }) 
                 authorId: pubkey,
                 normalizedRelays,
             });
-            setInvoice(invoice);
-            setShow(false);
-            setShowInvoiceDialog(true);
+            if (window.webln) {
+                try {
+                    console.info("Attempting to send payment automatically.")
+                    await window.webln.enable();
+                    await window.webln.sendPayment(invoice);
+                    setShow(false);
+                } catch (e) {
+                    console.info("Couldn't send payment automatically. Showing invoice.")
+                    setInvoice(invoice);
+                    setShow(false);
+                    setShowInvoiceDialog(true);
+                }
+            } else {
+                console.info("No webln available. Showing invoice.")
+                setInvoice(invoice);
+                setShow(false);
+                setShowInvoiceDialog(true);
+            }
         } catch (error) {
             console.error(error);
         }
+        
     }, [pubkey, amount, comment, normalizedRelays, setInvoice, setShow, setShowInvoiceDialog]);
 
     return (
@@ -445,7 +462,7 @@ const InvoiceDialog = ({ invoice, setInvoice, show, setShow }) => {
         setShow(false);
         setInvoice(null);
     }, [setInvoice, setShow]);
-    
+
     return (
         <Dialog open={show} onClose={handleClose} fullWidth>
             <DialogTitle>
