@@ -18,6 +18,10 @@ import {
     Box,
     Chip,
     IconButton,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
 } from "@mui/material";
 import React, { useState, useCallback } from "react";
 import { ArrowForward, ContentCopy, FavoriteBorder, Close } from "@mui/icons-material";
@@ -31,7 +35,7 @@ import { Lightning } from "@phosphor-icons/react";
 import { useZeumStore } from "./ZeumStore";
 import { toast } from "react-toastify";
 import QRCode from "react-qr-code";
-import { getProfileMetadata } from "../utils/Zap";
+import { cacheLightningUri, getCachedLightningUri, getProfileMetadata } from "../utils/Zap";
 
 export const Home = () => {
     return (
@@ -333,18 +337,18 @@ const ZapDialog = ({ pubkey, show, setShow, setInvoice, setShowInvoiceDialog }) 
             });
             if (window.webln) {
                 try {
-                    console.info("Attempting to send payment automatically.")
+                    console.info("Attempting to send payment automatically.");
                     await window.webln.enable();
                     await window.webln.sendPayment(invoice);
                     setShow(false);
                 } catch (e) {
-                    console.info("Couldn't send payment automatically. Showing invoice.")
+                    console.info("Couldn't send payment automatically. Showing invoice.");
                     setInvoice(invoice);
                     setShow(false);
                     setShowInvoiceDialog(true);
                 }
             } else {
-                console.info("No webln available. Showing invoice.")
+                console.info("No webln available. Showing invoice.");
                 setInvoice(invoice);
                 setShow(false);
                 setShowInvoiceDialog(true);
@@ -352,7 +356,6 @@ const ZapDialog = ({ pubkey, show, setShow, setInvoice, setShowInvoiceDialog }) 
         } catch (error) {
             console.error(error);
         }
-        
     }, [pubkey, amount, comment, normalizedRelays, setInvoice, setShow, setShowInvoiceDialog]);
 
     return (
@@ -453,6 +456,8 @@ const ZapDialog = ({ pubkey, show, setShow, setInvoice, setShowInvoiceDialog }) 
 };
 
 const InvoiceDialog = ({ invoice, setInvoice, show, setShow }) => {
+    const [lightningUri, setLightningUri] = useState(getCachedLightningUri);
+
     const handleCopy = useCallback(() => {
         navigator.clipboard.writeText(invoice);
         toast.success("Invoice copied to clipboard");
@@ -462,6 +467,32 @@ const InvoiceDialog = ({ invoice, setInvoice, show, setShow }) => {
         setShow(false);
         setInvoice(null);
     }, [setInvoice, setShow]);
+
+    const handleLigningUriChange = useCallback((e) => {
+        const value = e.target.value;
+        setLightningUri(value);
+    }, []);
+
+    const handleOpenWallet = useCallback(() => {
+        cacheLightningUri(lightningUri);
+        window.open(`${lightningUri}${invoice}`, "_blank");
+    }, [invoice, lightningUri]);
+
+    const walletOptions = [
+        { label: "Default Wallet", value: "lightning:" },
+        { label: "Strike", value: "strike:lightning:" },
+        { label: "Cash App", value: "https://cash.app/launch/lightning/" },
+        { label: "Muun", value: "muun:" },
+        { label: "Blue Wallet", value: "bluewallet:lightning:" },
+        { label: "Wallet of Satoshi", value: "walletofsatoshi:lightning:" },
+        { label: "Zebedee", value: "zebedee:lightning:" },
+        { label: "Zeus LN", value: "zeusln:lightning:" },
+        { label: "Phoenix", value: "phoenix://" },
+        { label: "Breez", value: "breez:" },
+        { label: "Bitcoin Beach", value: "bitcoinbeach://" },
+        { label: "Blixt", value: "blixtwallet:lightning:" },
+        { label: "River", value: "river://" },
+    ];
 
     return (
         <Dialog open={show} onClose={handleClose} fullWidth>
@@ -483,15 +514,42 @@ const InvoiceDialog = ({ invoice, setInvoice, show, setShow }) => {
                 <Close />
             </IconButton>
             <DialogContent>
-                <Box sx={{ textAlign: "center" }}>
-                    <QRCode size={256} value={invoice} viewBox={`0 0 256 256`} />
-                </Box>
-                <Chip
-                    label={invoice}
-                    sx={{ marginTop: 2, textAlign: "center", textOverflow: "ellipsis" }}
-                    onClick={handleCopy}
-                    icon={<ContentCopy fontSize="18" />}
-                />
+                <Grid container justifyContent="center" spacing={2}>
+                    <Grid item xs={12} textAlign="center">
+                        <Box >
+                            <QRCode size={256} value={invoice} viewBox={`0 0 256 256`} />
+                        </Box>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Chip
+                            label={invoice}
+                            sx={{ marginTop: 2, textAlign: "center", textOverflow: "ellipsis" }}
+                            onClick={handleCopy}
+                            icon={<ContentCopy fontSize="18" />}
+                        />
+                    </Grid>
+                    <Grid item xs={12}>
+                        <FormControl size="small" sx={{ minWidth: 240 }} fullWidth>
+                            <InputLabel id="wallet-select-label">Wallet</InputLabel>
+                            <Select
+                                labelId="wallet-select-label"
+                                id="wallet-select"
+                                value={lightningUri}
+                                label="Wallet"
+                                onChange={handleLigningUriChange}
+                            >
+                                {walletOptions.map((option) => (
+                                    <MenuItem value={option.value}>{option.label}</MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Button variant="contained" onClick={handleOpenWallet} sx={{ textTransform: "none" }} fullWidth>
+                            Open Wallet
+                        </Button>
+                    </Grid>
+                </Grid>
             </DialogContent>
         </Dialog>
     );
