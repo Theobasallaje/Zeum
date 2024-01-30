@@ -16,18 +16,22 @@ import {
     DialogTitle,
     DialogContent,
     Box,
+    Chip,
+    IconButton,
 } from "@mui/material";
-import React, { useState, useCallback, useMemo, useEffect } from "react";
-import { ArrowForward, FavoriteBorder } from "@mui/icons-material";
+import React, { useState, useCallback } from "react";
+import { ArrowForward, ContentCopy, FavoriteBorder, Close } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useReadEvent, useNostrEventIdDecode, useNostrReactions, useNostrProfile } from "./Hooks";
-import { Zap, createZap, isNullOrEmpty } from "../utils/Utils";
+import { fetchInvoice, isNullOrEmpty } from "../utils/Utils";
 import ZeumInputTextField from "./styled/ZeumInputTextField";
 import { useNostr, useProfile } from "nostr-react";
 import { nip19, nip57 } from "nostr-tools";
 import { Lightning } from "@phosphor-icons/react";
 import { useZeumStore } from "./ZeumStore";
 import { toast } from "react-toastify";
+import QRCode from "react-qr-code";
+import { getProfileMetadata } from "../utils/Zap";
 
 export const Home = () => {
     return (
@@ -220,8 +224,8 @@ const CreatedBy = () => {
             </Grid>
             <Grid item xs={12} textAlign="center">
                 <Stack spacing={3} textAlign="center">
-                    <NostrFeaturedAvatar npub="npub1xk50nsp89sge5cs0glq9tjxm885lsp077xez6zm6g2ccjdga4enqnkmr0f" />
-                    <NostrFeaturedAvatar npub="npub1wfl0hjv07uvma6zd93cz9w5vxhg6xfvla74tcv4wsymals0729zsg3er8n" />
+                    <FeaturedAvatar npub="npub1xk50nsp89sge5cs0glq9tjxm885lsp077xez6zm6g2ccjdga4enqnkmr0f" />
+                    <FeaturedAvatar npub="npub1wfl0hjv07uvma6zd93cz9w5vxhg6xfvla74tcv4wsymals0729zsg3er8n" />
                 </Stack>
             </Grid>
         </Grid>
@@ -231,11 +235,10 @@ const CreatedBy = () => {
 const SupportUs = ({ npub }) => {
     const pubkey = nip19.decode(npub)?.data;
     const { signedInAs } = useZeumStore();
-    const { connectedRelays, publish } = useNostr();
     const [showZapModal, setShowZapModal] = useState(false);
     const [showSignInModal, setShowSignInModal] = useState(false);
-    const [amount, setAmount] = useState(0);
-    const [comment, setComment] = useState("");
+    const [invoice, setInvoice] = useState(null);
+    const [showInvoiceDialog, setShowInvoiceDialog] = useState(false);
 
     const handleClick = useCallback(
         () => (!!signedInAs ? setShowZapModal(true) : setShowSignInModal(true)),
@@ -244,8 +247,17 @@ const SupportUs = ({ npub }) => {
 
     return (
         <>
-            <ZapDialog show={showZapModal} setShow={setShowZapModal} pubkey={pubkey} />
+            <ZapDialog
+                show={showZapModal}
+                setShow={setShowZapModal}
+                setShowInvoiceDialog={setShowInvoiceDialog}
+                pubkey={pubkey}
+                setInvoice={setInvoice}
+            />
             <SignInDialog show={showSignInModal} setShow={setShowSignInModal} />
+            {invoice ? (
+                <InvoiceDialog invoice={invoice} setInvoice={setInvoice} show={showInvoiceDialog} setShow={setShowInvoiceDialog} />
+            ) : null}
             <Button variant="outlined" endIcon={<FavoriteBorder />} onClick={handleClick}>
                 <Typography fontWeight={600}>Support</Typography>
             </Button>
@@ -266,7 +278,7 @@ const SignInDialog = ({ show, setShow }) => {
                 setSignedInAs(publicKey);
             } catch (e) {
                 console.error(e);
-            } 
+            }
         }
     }, [setSignedInAs, signedInAs]);
 
@@ -277,6 +289,18 @@ const SignInDialog = ({ show, setShow }) => {
                     <Avatar src="apple-touch-icon.png" sx={{ marginRight: 1 }} /> Sign In
                 </Grid>
             </DialogTitle>
+            <IconButton
+                aria-label="close"
+                onClick={handleClose}
+                sx={{
+                    position: "absolute",
+                    right: 8,
+                    top: 8,
+                    color: (theme) => theme.palette.grey[500],
+                }}
+            >
+                <Close />
+            </IconButton>
             <DialogContent>
                 <Stack direction="column">
                     <Button variant="contained" sx={{ marginTop: 3 }} onClick={handleSingInWithExtension}>
@@ -288,29 +312,51 @@ const SignInDialog = ({ show, setShow }) => {
     );
 };
 
-const ZapDialog = ({ pubkey, show, setShow }) => {
-    const { signedInAs, nostrExtension } = useZeumStore();
+const ZapDialog = ({ pubkey, show, setShow, setInvoice, setShowInvoiceDialog }) => {
     const { connectedRelays } = useNostr();
+    const normalizedRelays = connectedRelays?.map((relay) => relay.url);
     const [amount, setAmount] = useState(0);
     const [comment, setComment] = useState("");
-    const { data: profile } = useProfile({ pubkey, enabled: !!pubkey });
-    const handleZapModalClose = () => setShow(false);
+    const handleClose = () => setShow(false);
 
     const handleZap = useCallback(async () => {
-        const zapInvoice = await Zap({ comment, relays: connectedRelays?.map((relay) => relay?.url), amount, pubkey: signedInAs, target: profile, nostrExtension });
-        if (!zapInvoice) toast.error("Error zapping Zeum.space");
-        toast.success(`Zapped Zeum.space ${amount} sats`);
-        setShow(false);
-    }, [comment, connectedRelays, amount, signedInAs, profile, nostrExtension, setShow]);
-
+        const profileMetadata = await getProfileMetadata(pubkey, normalizedRelays);
+        const zapEndpoint = await nip57.getZapEndpoint(profileMetadata);
+        try {
+            const invoice = await fetchInvoice({
+                zapEndpoint,
+                amount,
+                comment,
+                authorId: pubkey,
+                normalizedRelays,
+            });
+            setInvoice(invoice);
+            setShow(false);
+            setShowInvoiceDialog(true);
+        } catch (error) {
+            console.error(error);
+        }
+    }, [pubkey, amount, comment, normalizedRelays, setInvoice, setShow, setShowInvoiceDialog]);
 
     return (
-        <Dialog open={show} onClose={handleZapModalClose} fullWidth>
+        <Dialog open={show} onClose={handleClose} fullWidth>
             <DialogTitle>
                 <Grid container item xs={12} alignItems="center">
                     <Avatar src="apple-touch-icon.png" sx={{ marginRight: 1 }} /> Send sats to Zeum.space
                 </Grid>
             </DialogTitle>
+            <IconButton
+                aria-label="close"
+                onClick={handleClose}
+                sx={{
+                    position: "absolute",
+                    right: 8,
+                    top: 8,
+                    color: (theme) => theme.palette.grey[500],
+                }}
+            >
+                <Close />
+            </IconButton>
             <DialogContent>
                 <Typography variant="subtitle1">Zap amount in sats</Typography>
                 <Grid container spacing={1} justifyContent="center" marginBottom={1}>
@@ -389,7 +435,52 @@ const ZapDialog = ({ pubkey, show, setShow }) => {
     );
 };
 
-const NostrFeaturedAvatar = ({ npub }) => {
+const InvoiceDialog = ({ invoice, setInvoice, show, setShow }) => {
+    const handleCopy = useCallback(() => {
+        navigator.clipboard.writeText(invoice);
+        toast.success("Invoice copied to clipboard");
+    }, [invoice]);
+
+    const handleClose = useCallback(() => {
+        setShow(false);
+        setInvoice(null);
+    }, [setInvoice, setShow]);
+    
+    return (
+        <Dialog open={show} onClose={handleClose} fullWidth>
+            <DialogTitle>
+                <Grid container item xs={12} alignItems="center">
+                    <Avatar src="apple-touch-icon.png" sx={{ marginRight: 1 }} /> Invoice
+                </Grid>
+            </DialogTitle>
+            <IconButton
+                aria-label="close"
+                onClick={handleClose}
+                sx={{
+                    position: "absolute",
+                    right: 8,
+                    top: 8,
+                    color: (theme) => theme.palette.grey[500],
+                }}
+            >
+                <Close />
+            </IconButton>
+            <DialogContent>
+                <Box sx={{ textAlign: "center" }}>
+                    <QRCode size={256} value={invoice} viewBox={`0 0 256 256`} />
+                </Box>
+                <Chip
+                    label={invoice}
+                    sx={{ marginTop: 2, textAlign: "center", textOverflow: "ellipsis" }}
+                    onClick={handleCopy}
+                    icon={<ContentCopy fontSize="18" />}
+                />
+            </DialogContent>
+        </Dialog>
+    );
+};
+
+const FeaturedAvatar = ({ npub }) => {
     const decodedPubkey = nip19.decode(npub);
     // @ts-ignore
     const { data: profile } = useProfile({ pubkey: decodedPubkey?.data, enabled: !!decodedPubkey?.data });
