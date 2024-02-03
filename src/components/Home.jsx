@@ -51,7 +51,7 @@ export const Home = () => {
                 <Grid item xs={12} marginY={10}>
                     <CreatedBy />
                     <Grid container textAlign="center" justifyContent="center" marginTop={4}>
-                        <SupportUs npub="npub1xk50nsp89sge5cs0glq9tjxm885lsp077xez6zm6g2ccjdga4enqnkmr0f" />
+                {true && <SupportUs npub="npub1xk50nsp89sge5cs0glq9tjxm885lsp077xez6zm6g2ccjdga4enqnkmr0f" />}
                     </Grid>
                 </Grid>
             </Grid>

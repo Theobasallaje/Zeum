@@ -49,10 +49,11 @@ export const fetchInvoice = async ({ zapEndpoint, amount, comment, authorId, not
     const zapEvent = await makeZapEvent({
         profile: authorId,
         event: noteId ? nip19.decode(noteId) : undefined,
-        amount,
+        amount: msatToSat(amount),
         relays: normalizedRelays,
         comment,
     });
+    
     let url = `${zapEndpoint}?amount=${amount}&nostr=${encodeURIComponent(JSON.stringify(zapEvent))}`;
 
     if (comment) {
@@ -76,3 +77,5 @@ const makeZapEvent = async ({ profile, event, amount, relays, comment }) => {
 
     return window?.nostr?.signEvent(zapEvent);
 };
+
+export const msatToSat = (msat) => msat * 1000;
