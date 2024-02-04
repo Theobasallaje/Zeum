@@ -22,6 +22,7 @@ import {
     InputLabel,
     Select,
     MenuItem,
+    CircularProgress,
 } from "@mui/material";
 import React, { useState, useCallback } from "react";
 import { ArrowForward, ContentCopy, FavoriteBorder, Close } from "@mui/icons-material";
@@ -51,7 +52,7 @@ export const Home = () => {
                 <Grid item xs={12} marginY={10}>
                     <CreatedBy />
                     <Grid container textAlign="center" justifyContent="center" marginTop={4}>
-                {true && <SupportUs npub="npub1xk50nsp89sge5cs0glq9tjxm885lsp077xez6zm6g2ccjdga4enqnkmr0f" />}
+                        <SupportUs npub="npub1xk50nsp89sge5cs0glq9tjxm885lsp077xez6zm6g2ccjdga4enqnkmr0f" />
                     </Grid>
                 </Grid>
             </Grid>
@@ -322,9 +323,11 @@ const ZapDialog = ({ pubkey, show, setShow, setInvoice, setShowInvoiceDialog }) 
     const normalizedRelays = connectedRelays?.map((relay) => relay.url);
     const [amount, setAmount] = useState(0);
     const [comment, setComment] = useState("");
+    const [isZapping, setIsZapping] = useState(false);
     const handleClose = () => setShow(false);
 
     const handleZap = useCallback(async () => {
+        setIsZapping(true);
         const profileMetadata = await getProfileMetadata(pubkey, normalizedRelays);
         const zapEndpoint = await nip57.getZapEndpoint(profileMetadata);
         try {
@@ -355,6 +358,8 @@ const ZapDialog = ({ pubkey, show, setShow, setInvoice, setShowInvoiceDialog }) 
             }
         } catch (error) {
             console.error(error);
+        } finally {
+            setIsZapping(false);
         }
     }, [pubkey, amount, comment, normalizedRelays, setInvoice, setShow, setShowInvoiceDialog]);
 
@@ -447,8 +452,19 @@ const ZapDialog = ({ pubkey, show, setShow, setInvoice, setShowInvoiceDialog }) 
                     sx={{ marginBottom: 2 }}
                 />
 
-                <Button variant="contained" onClick={handleZap} sx={{ textTransform: "none" }} fullWidth>
-                    <Lightning weight="fill" /> <Typography>Zap Zeum.space</Typography>
+                <Button
+                    variant="contained"
+                    onClick={handleZap}
+                    sx={{ textTransform: "none" }}
+                    fullWidth
+                    disabled={amount === 0}
+                >
+                    {isZapping ? (
+                        <CircularProgress size={16} color="inherit" style={{ marginRight: "4px" }} />
+                    ) : (
+                        <Lightning weight="fill" style={{ marginRight: "4px" }} />
+                    )}
+                    <Typography>Zap Zeum</Typography>
                 </Button>
             </DialogContent>
         </Dialog>
@@ -516,7 +532,7 @@ const InvoiceDialog = ({ invoice, setInvoice, show, setShow }) => {
             <DialogContent>
                 <Grid container justifyContent="center" spacing={2}>
                     <Grid item xs={12} textAlign="center">
-                        <Box >
+                        <Box>
                             <QRCode size={256} value={invoice} viewBox={`0 0 256 256`} />
                         </Box>
                     </Grid>
@@ -539,7 +555,9 @@ const InvoiceDialog = ({ invoice, setInvoice, show, setShow }) => {
                                 onChange={handleLigningUriChange}
                             >
                                 {walletOptions.map((option) => (
-                                    <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
+                                    <MenuItem key={option.value} value={option.value}>
+                                        {option.label}
+                                    </MenuItem>
                                 ))}
                             </Select>
                         </FormControl>
