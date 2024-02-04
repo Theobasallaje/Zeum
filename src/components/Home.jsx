@@ -27,7 +27,7 @@ import React, { useState, useCallback } from "react";
 import { ArrowForward, ContentCopy, FavoriteBorder, Close } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useReadEvent, useNostrEventIdDecode, useNostrReactions, useNostrProfile } from "./Hooks";
-import { fetchInvoice, isNullOrEmpty } from "../utils/Utils";
+import { fetchInvoice, isNullOrEmpty, satToMsat } from "../utils/Utils";
 import ZeumInputTextField from "./styled/ZeumInputTextField";
 import { useNostr, useProfile } from "nostr-react";
 import { nip19, nip57 } from "nostr-tools";
@@ -330,7 +330,7 @@ const ZapDialog = ({ pubkey, show, setShow, setInvoice, setShowInvoiceDialog }) 
         try {
             const invoice = await fetchInvoice({
                 zapEndpoint,
-                amount,
+                amount: satToMsat(amount),
                 comment,
                 authorId: pubkey,
                 normalizedRelays,
