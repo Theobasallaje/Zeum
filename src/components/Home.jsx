@@ -460,9 +460,9 @@ const ZapDialog = ({ pubkey, show, setShow, setInvoice, setShowInvoiceDialog }) 
                     disabled={amount === 0}
                 >
                     {isZapping ? (
-                        <CircularProgress size={16} color="inherit" style={{ marginRight: "4px" }} />
+                        <CircularProgress size={16} color="inherit" sx={{ marginRight: "4px" }} />
                     ) : (
-                        <Lightning weight="fill" style={{ marginRight: "4px" }} />
+                        <Lightning weight="fill" sx={{ marginRight: "4px" }} />
                     )}
                     <Typography>Zap Zeum</Typography>
                 </Button>
