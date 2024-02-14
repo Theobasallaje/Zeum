@@ -1,4 +1,10 @@
-# Getting Started with Create React App
+# Zeum - the internet museum
+
+Zeum.space is a [nostr based](https://nostr.com/) application that allows anyone to create their own virtual gallery. Zeum.space is open source, and we encourage contributions, experimentation, and feedback. 
+
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+
+## Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
