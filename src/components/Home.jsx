@@ -230,7 +230,7 @@ const CreatedBy = () => {
             <Grid item xs={12} textAlign="center">
                 <Stack spacing={3} textAlign="center">
                     <FeaturedAvatar npub="npub1xk50nsp89sge5cs0glq9tjxm885lsp077xez6zm6g2ccjdga4enqnkmr0f" />
-                    <FeaturedAvatar npub="npub1wfl0hjv07uvma6zd93cz9w5vxhg6xfvla74tcv4wsymals0729zsg3er8n" />
+                    <FeaturedAvatar npub="npub15q5a7j3vfgzz7jer5rtpjl7edqyq2vn7qgltzuzuwrgnmwvzrg7svz0rem" />
                 </Stack>
             </Grid>
         </Grid>
