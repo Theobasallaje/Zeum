@@ -15,43 +15,39 @@ export const App = () => {
     const { nostrExtension } = useZeumStore();
     const { data: relayUrls, isLoading } = useDefaultRelaysQuery();
 
-
-    if (!signedInAs && nostrExtension) {
+    if (nostrExtension) {
         try {
-            const publicKey = nostrExtension?.getPublicKey();
-            setSignedInAs(publicKey);
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    if (signedInAs && nostrExtension) {
-        try {
-            const userRelays = nostrExtension?.getRelays();
-            if (userRelays?.length) setPreferredRelays(userRelays);
+            if (signedInAs) {
+                const userRelays = nostrExtension?.getRelays();
+                if (userRelays?.length) setPreferredRelays(userRelays);
+            } else {
+                const publicKey = nostrExtension?.getPublicKey();
+                setSignedInAs(publicKey);
+            }
         } catch (e) {
             console.error(e);
         }
     }
 
     // We get a bunch of relays from the API, but no reason to load them all
-    const topRelays = useMemo(() => !!preferredRelays?.length ? preferredRelays : relayUrls?.slice?.(0, 15), [preferredRelays, relayUrls]);
+    const topRelays = useMemo(
+        () => (!!preferredRelays?.length ? preferredRelays : relayUrls?.slice?.(0, 15)),
+        [preferredRelays, relayUrls]
+    );
 
     if (isLoading || !topRelays?.length) return "Loading Relays...";
 
     return (
-      
-            <NostrProvider relayUrls={topRelays}>
-                <ThemeProvider theme={ZeumTheme}>
-                    <Router>
-                        <Routes>
-                            <Route path="/" element={<Home />} />
-                            <Route path="/:eventId" element={<Scene />} />
-                        </Routes>
-                    </Router>
-                </ThemeProvider>
-                <ToastContainer />
-            </NostrProvider>
-
+        <NostrProvider relayUrls={topRelays}>
+            <ThemeProvider theme={ZeumTheme}>
+                <Router>
+                    <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/:eventId" element={<Scene />} />
+                    </Routes>
+                </Router>
+            </ThemeProvider>
+            <ToastContainer />
+        </NostrProvider>
     );
 };

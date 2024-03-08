@@ -6,6 +6,19 @@ import { useFrame } from "@react-three/fiber";
 import React, { useRef, useMemo, useCallback, useEffect, useReducer } from "react";
 import { Object3D } from "three";
 
+export const Floor = ({ depth, width, position, debug = false }) => {
+    const [ref] = useBox(
+        () => ({ position, rotation: [-Math.PI / 2, 0, 0], receiveShadow: true, collisionResponse: false }),
+        useRef(null)
+    );
+    return (
+        <mesh ref={ref} position={position} receiveShadow castShadow type="fixed">
+            <planeGeometry args={[width, depth]} />
+            <meshStandardMaterial color={debug ? "red" : "gray"} />
+        </mesh>
+    );
+};
+
 export const MainFloor = ({ height, width }) => {
     const [ref] = usePlane(
         () => ({ position: [0, 0, 0], rotation: [-Math.PI / 2, 0, 0], receiveShadow: true }),
@@ -53,15 +66,24 @@ export const ExitPlane = ({ roomHeight, handleExit }) => {
     return <mesh ref={ref} type="fixed" name="exit-plane"></mesh>;
 };
 
-export const Wall = (props) => {
-    const [wallRef] = useBox(() => ({ ...props, type: "Static" }), useRef(null));
+export const Wall = ({ position, horizontal = false, height, width, depth, visible = true }) => {
+    const [wallRef] = useBox(
+        () => ({
+            position,
+            height,
+            rotation: horizontal ? [0, Math.PI / 2, 0] : [0, 0, 0],
+            width,
+            depth,
+            type: "Static",
+            args: [width, height, depth],
+        }),
+        useRef(null)
+    );
     return (
-        <group>
-            <mesh ref={wallRef} type="fixed" receiveShadow castShadow>
-                <boxGeometry args={[props.width, props.height, props.depth]} />
-                <meshStandardMaterial color="#787878" />
-            </mesh>
-        </group>
+        <mesh ref={wallRef} type="fixed" receiveShadow castShadow>
+            <boxGeometry args={[width, height, depth]} />
+            <meshStandardMaterial color="#787878" visible={visible ?? true} />
+        </mesh>
     );
 };
 
@@ -140,7 +162,7 @@ export const DisplayWall = ({ artifact, args, position, width, height, depth }) 
                     src={artifactRef?.current}
                     alt="Art Display"
                     style={{
-                        height: "25vh",
+                        height: "22vh",
                         border: "3px solid #2a2a2a",
                     }}
                 />
@@ -201,5 +223,39 @@ export const Dust = () => {
             <dodecahedronGeometry args={[0.025, 0]} />
             <meshPhongMaterial color="#ffffff" />
         </instancedMesh>
+    );
+};
+
+export const FullSizeRoom = ({ roomDepth, roomWidth }) => {
+    return (
+        <>
+            {/* 1st Room Back Wall */}
+            <Wall position={[0, 7.5, 62.5]} horizontal width={2} height={15} depth={50} />
+            {/* Left Wall */}
+            <Wall position={[24, 2.5, 0]} width={2} height={5} depth={roomDepth} />
+            {/* Inner Left Wall */}
+            <Wall position={[-26, 2.5, 0]} width={2} height={5} depth={50} />
+            {/* Inner Right Wall */}
+            <Wall position={[-75, 2.5, 0]} width={2} height={5} depth={50} />
+            {/* Right Wall */}
+
+            <Wall position={[-124, 2.5, 0]} width={2} height={5} depth={roomDepth} />
+            <Wall position={[-50.5, 2.5, 24]} horizontal width={2} height={5} depth={51} visible={false}/>
+            <Wall position={[-50.5, 2.5, -24]} horizontal width={2} height={5} depth={51} />
+            <Wall position={[-50.5, 2.5, -62]} horizontal width={2} height={5} depth={51} visible={false}/>
+            <Floor position={[-50, 0, -42.75]} width={roomWidth} depth={roomDepth / 3 - 2} />
+            
+            {/* Hallway Back Wall */}
+            <Wall position={[-50, 7.5, 62.5]} horizontal width={2} height={15} depth={50} />
+            {/* Hallway Floor */}
+            <Floor position={[-50, 0, 43.5]} width={roomWidth} depth={roomDepth / 3 - 2} />
+            {/* 2nd Room Back Wall */}
+            <Wall position={[-100, 7.5, 62.5]} horizontal width={2} height={15} depth={50} />
+            {/* 2nd Room Floor */}
+            <Floor position={[-100, 0, 0]} width={roomWidth} depth={roomDepth} />
+            {/* 2nd Room Front Wall */}
+            <Wall position={[-100, 2.5, -62]} horizontal width={2} height={5} depth={50} visible={false}/>
+            <MainFloor height={roomDepth} width={roomWidth} />
+        </>
     );
 };

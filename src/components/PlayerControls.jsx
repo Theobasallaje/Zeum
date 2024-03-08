@@ -4,7 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { Vector3 } from "three";
 import React, { useEffect, useRef } from "react";
 import { useControls, useIsTouchScreen, usePlayerPosition } from "./Hooks";
-import { PerspectiveCamera } from "@react-three/drei";
+import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import { CAMERA_STARTING_POSITION, CAMERA_STARTING_ROTATION } from "./Constants";
 import { useZeumStore } from "./ZeumStore";
 

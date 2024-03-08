@@ -1,15 +1,19 @@
 import React from "react";
-import { Wall, MainFloor, DisplayWall, CeilingPlane } from "../Environment";
+import { Wall, MainFloor, DisplayWall } from "../Environment";
+import { useZeumStore } from "../ZeumStore";
 
-export const TripleArtifactRoom = ({ roomDepth, roomWidth, artifacts }) => {
+export const ThreeArtifactRoom = () => {
+    const { getRoomDepth, roomWidth, artifacts } = useZeumStore();
+    const roomDepth = getRoomDepth();
+    
     return (
         <>
             {/* Back Wall */}
-            <Wall position={[0, 5, 25]} args={[roomWidth, roomWidth / 2, 0.5]} width={roomWidth} height={10} depth={0.5} />
+            <Wall position={[0, 5, 25]} width={roomWidth} height={10} depth={0.5} />
             {/* Left Wall */}
-            <Wall position={[-24, 2.5, 0]} args={[2, 5, roomDepth]} width={2} height={5} depth={roomDepth} />
+            <Wall position={[-24, 2.5, 0]}  width={2} height={5} depth={roomDepth} />
             {/* Right Wall */}
-            <Wall position={[24, 2.5, 0]} args={[2, 5, roomDepth]} width={2} height={5} depth={roomDepth} />
+            <Wall position={[24, 2.5, 0]}  width={2} height={5} depth={roomDepth} />
             <MainFloor height={roomDepth} width={roomWidth} />
             <DisplayWall
                 artifact={artifacts[2]}

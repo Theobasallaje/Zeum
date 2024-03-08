@@ -1,12 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import React, { useCallback, useEffect, useState, useRef, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Canvas } from "@react-three/fiber";
 import { Physics } from "@react-three/cannon";
 import { ExitPlane, Dust } from "./Environment";
 import { PlayerControls } from "./PlayerControls";
-import { SingleArtifactRoom } from "./rooms/SingleArtifactRoom";
-import { DoubleArtifactRoom } from "./rooms/DoubleArtifactRoom";
-import { TripleArtifactRoom } from "./rooms/TripleArtifactRoom";
 import { findImageUrlsInEvent } from "../utils/Utils";
 import { useNostrEvents } from "nostr-react";
 import { BackdropLoader } from "./BackdropLoader";
@@ -20,24 +17,18 @@ export const Scene = () => {
     const [isLoading, setIsLoading] = useState(false);
     const { eventId } = useParams();
     const navigate = useNavigate();
-    const [images, setImages] = useState([]);
-    const { setIsContextActionActive } = useZeumStore();
+    const { setIsContextActionActive, getArtifactRoom, getRoomDepth, setArtifacts, artifacts } = useZeumStore();
     const { events, isLoading: isLoadingNostrEvent } = useNostrEvents({
         filter: {
             ids: eventId ? [eventId] : undefined,
         },
         enabled: !!eventId,
     });
-    const isArtifactsFound = useMemo(() => images?.length > 0, [images]);
-    const roomDepth = useMemo(() => {
-        if (images?.length === 1) return 50;
-        if (images?.length === 2) return 62.5;
-        if (images?.length >= 3) return 78.125;
-    }, [images]);
-
+    const roomDepth = getRoomDepth();
     const handleExit = useCallback(() => {
+        setArtifacts([]);
         navigate("/");
-    }, [navigate]);
+    }, [navigate, setArtifacts]);
 
     const handleStartContextAction = useCallback(() => {
         setIsContextActionActive(true);
@@ -50,13 +41,15 @@ export const Scene = () => {
         [setIsContextActionActive]
     );
 
+    const isArtifactsFound = useMemo(() => artifacts?.length > 0, [artifacts]);
+
     useEffect(() => {
         const selectedEvent = events?.find((event) => event?.id === eventId);
-        if (selectedEvent && images?.length < 1) {
+        if (selectedEvent && artifacts?.length < 1) {
             const imageUrls = findImageUrlsInEvent(selectedEvent);
-            setImages(imageUrls);
+            setArtifacts(imageUrls);
         }
-    }, [events, eventId, images]);
+    }, [events, eventId, artifacts, setArtifacts, isArtifactsFound]);
 
     useEffect(() => {
         let timer;
@@ -92,15 +85,7 @@ export const Scene = () => {
                         <ambientLight intensity={2} position={[0, 10, 4]} />
                         <Physics iterations={15}>
                             <Dust />
-                            {images?.length === 1 && (
-                                <SingleArtifactRoom artifact={images[0]} roomDepth={roomDepth} roomWidth={50} />
-                            )}
-                            {images?.length === 2 && (
-                                <DoubleArtifactRoom artifacts={images} roomDepth={roomDepth} roomWidth={50} />
-                            )}
-                            {images?.length >= 3 && (
-                                <TripleArtifactRoom artifacts={images} roomDepth={roomDepth} roomWidth={50} />
-                            )}
+                            {getArtifactRoom()}
                             <PlayerControls startPosition={[0, 0, -(roomDepth / 2.5)]} mainCameraRef={mainCameraRef} />
                             <ExitPlane roomHeight={roomDepth} handleExit={handleExit} />
                         </Physics>

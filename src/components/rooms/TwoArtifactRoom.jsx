@@ -1,18 +1,18 @@
 import React from "react";
 import { Wall, MainFloor, DisplayWall } from "../Environment";
+import { useZeumStore } from "../ZeumStore";
 
-export const DoubleArtifactRoom = ({ roomDepth, roomWidth, artifacts }) => {
-    // Calculate new widths for the walls and floors
+export const TwoArtifactRoom = () => {
+    const { getRoomDepth, roomWidth, artifacts } = useZeumStore();
+    const roomDepth = getRoomDepth();
     const backWallWidth = roomWidth + 2.5;
     const leftWallWidth = 2;
     const rightWallWidth = 2;
-
     return (
         <>
             {/* Back Wall */}
             <Wall
                 position={[-1, 5, 25]}
-                args={[backWallWidth, backWallWidth / 2, 0.5]}
                 width={backWallWidth}
                 height={10}
                 depth={0.5}
@@ -20,7 +20,6 @@ export const DoubleArtifactRoom = ({ roomDepth, roomWidth, artifacts }) => {
             {/* Left Wall */}
             <Wall
                 position={[-(roomWidth / 2) - 1, 2, 0]}
-                args={[2, 5, 50]}
                 width={leftWallWidth}
                 height={5}
                 depth={roomDepth}
@@ -28,7 +27,6 @@ export const DoubleArtifactRoom = ({ roomDepth, roomWidth, artifacts }) => {
             {/* Right Wall */}
             <Wall
                 position={[roomWidth / 2 - 1, 2, 0]}
-                args={[2, 5, 50]}
                 width={rightWallWidth}
                 height={5}
                 depth={roomDepth}
