@@ -1,17 +1,17 @@
 import React from "react";
 import create from "zustand";
-import { TwoArtifactRoom } from "./rooms/TwoArtifactRoom";
-import { FiveArtifactRoom } from "./rooms/FiveArtifactRoom";
-import { FourArtifactRoom } from "./rooms/FourArtifactRoom";
-import { SingleArtifactRoom } from "./rooms/SingleArtifactRoom";
-import { ThreeArtifactRoom } from "./rooms/ThreeArtifactRoom";
-import { TwelveArtifactRoom } from "./rooms/TwelveArtifactRoom";
-import { EightArtifactRoom } from "./rooms/EightArtifactRoom";
-import { ElevenArtifactRoom } from "./rooms/ElevenArtifactRoom";
-import { NineArtifactRoom } from "./rooms/NineArtifactRoom";
-import { SevenArtifactRoom } from "./rooms/SevenArtifactRoom";
-import { SixArtifactRoom } from "./rooms/SixArtifactRoom";
-import { TenArtifactRoom } from "./rooms/TenArtifactRoom";
+import { TwoArtifactRoom } from "./roomConfigs/TwoArtifactRoom";
+import { FiveArtifactRoom } from "./roomConfigs/FiveArtifactRoom";
+import { FourArtifactRoom } from "./roomConfigs/FourArtifactRoom";
+import { SingleArtifactRoom } from "./roomConfigs/SingleArtifactRoom";
+import { ThreeArtifactRoom } from "./roomConfigs/ThreeArtifactRoom";
+import { TwelveArtifactRoom } from "./roomConfigs/TwelveArtifactRoom";
+import { EightArtifactRoom } from "./roomConfigs/EightArtifactRoom";
+import { ElevenArtifactRoom } from "./roomConfigs/ElevenArtifactRoom";
+import { NineArtifactRoom } from "./roomConfigs/NineArtifactRoom";
+import { SevenArtifactRoom } from "./roomConfigs/SevenArtifactRoom";
+import { SixArtifactRoom } from "./roomConfigs/SixArtifactRoom";
+import { TenArtifactRoom } from "./roomConfigs/TenArtifactRoom";
 
 export const useZeumStore = create((set, get) => ({
     nostrExtension: window?.nostr,
@@ -46,7 +46,9 @@ export const useZeumStore = create((set, get) => ({
         if (artifacts?.length >= 3 && artifacts?.length < 10) return 78.125;
         if (artifacts?.length >= 10) return 125;
     },
-    getArtifactRoom: () => {
+    showJoystick: false,
+    setShowJoystick: (showJoystick) => set({ showJoystick }),
+    getRoomConfiguration: () => {
         const artifacts = get()?.artifacts;
         if (!artifacts?.length) return;
         switch (artifacts?.length) {

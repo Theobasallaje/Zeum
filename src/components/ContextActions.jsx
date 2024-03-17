@@ -1,6 +1,6 @@
 import { Visibility, Close } from "@mui/icons-material";
 import { Box, Button, IconButton } from "@mui/material";
-import React, { useCallback, useRef } from "react";
+import React, { useCallback } from "react";
 import { toast } from "react-toastify";
 import { useZeumStore } from "./ZeumStore";
 import { useIsTouchScreen } from "./Hooks";

@@ -21,11 +21,11 @@ export const Floor = ({ depth, width, position, debug = false }) => {
 
 export const MainFloor = ({ height, width }) => {
     const [ref] = usePlane(
-        () => ({ position: [0, 0, 0], rotation: [-Math.PI / 2, 0, 0], receiveShadow: true }),
+        () => ({ position: [0, 0, 0], rotation: [-Math.PI / 2, 0, 0], receiveShadow: true, type: "Static" }),
         useRef(null)
     );
     return (
-        <mesh ref={ref} position={[0, 0, 0]} receiveShadow castShadow type="fixed">
+        <mesh ref={ref} position={[0, 0, 0]} receiveShadow castShadow>
             <planeGeometry args={[width, height]} />
             <meshStandardMaterial>
                 <GradientTexture
@@ -57,13 +57,13 @@ export const ExitPlane = ({ roomHeight, handleExit }) => {
             args: [roomHeight, 0, 0],
             rotation: [-Math.PI / 2, 0, 0],
             position: [0, 0, -(roomHeight / 2 - 0.5)],
-            receiveShadow: true,
+            // receiveShadow: true,
             onCollide: handleExit,
         }),
         useRef(null)
     );
 
-    return <mesh ref={ref} type="fixed" name="exit-plane"></mesh>;
+    return <mesh ref={ref} type="static" name="exit-plane"></mesh>;
 };
 
 export const Wall = ({ position, horizontal = false, height, width, depth, visible = true }) => {
@@ -80,7 +80,7 @@ export const Wall = ({ position, horizontal = false, height, width, depth, visib
         useRef(null)
     );
     return (
-        <mesh ref={wallRef} type="fixed" receiveShadow castShadow>
+        <mesh ref={wallRef}  receiveShadow castShadow>
             <boxGeometry args={[width, height, depth]} />
             <meshStandardMaterial color="#787878" visible={visible ?? true} />
         </mesh>
@@ -100,11 +100,24 @@ export const CeilingPlane = () => {
     );
 };
 
-export const DisplayWall = ({ artifact, args, position, width, height, depth }) => {
+export const DisplayWall = ({ artifact, position, width=10, height=8, depth=0.5 }) => {
     const artifactRef = useRef(artifact);
-    const [, forceUpdate] = useReducer((x) => x + 1, 0);
+    const { setIsPlayerInRangeForContextAction, deactivateCloseUp, setArtifactPosition } = useZeumStore();
 
-    const [wallRef] = useBox(() => ({ position, args, width, height, depth, type: "Static" }), useRef(null));
+    const handlePlayerClose = useCallback(
+        (e) => {
+            setIsPlayerInRangeForContextAction(true);
+            setArtifactPosition([position[0], 1, position[2] - 8]);
+        },
+        [position]
+    );
+
+    const handlePlayerFar = useCallback(() => {
+        deactivateCloseUp();
+    }, [deactivateCloseUp]);
+
+    const [wallRef] = useBox(() => ({ position, width, height, depth, type: "Static" }), useRef(null));
+
     const [contextActionRangeRef] = useBox(
         () => ({
             args: [width, height, depth + 10],
@@ -117,37 +130,19 @@ export const DisplayWall = ({ artifact, args, position, width, height, depth }) 
         }),
         useRef(null)
     );
-    const { setIsPlayerInRangeForContextAction, deactivateCloseUp, setArtifactPosition } = useZeumStore();
-    const handlePlayerClose = useCallback(
-        (e) => {
-            setIsPlayerInRangeForContextAction(true);
-
-            const viewingPosition = [position[0], 1, position[2] - 8];
-            setArtifactPosition(viewingPosition);
-        },
-        [position, setArtifactPosition, setIsPlayerInRangeForContextAction]
-    );
-
-    const handlePlayerFar = useCallback(() => {
-        deactivateCloseUp();
-    }, [deactivateCloseUp]);
-
-    useEffect(() => {
-        //This is not ideal but needed to ensure correct aspect ratio on first frame
-        forceUpdate();
-    });
 
     return (
         <group>
             <pointLight
                 position={[position[0], position[1], position[2] - 5]}
-                rotation={[-Math.PI / 2 + (25 * Math.PI) / 180, 0, 0]}
                 color="white"
-                intensity={25}
+                intensity={15} 
                 castShadow
+                shadow-mapSize-width={512} 
+                shadow-mapSize-height={512}
             />
             <mesh ref={contextActionRangeRef}></mesh>
-            <mesh ref={wallRef} type="fixed" receiveShadow castShadow>
+            <mesh ref={wallRef} >
                 <boxGeometry args={[width, height, depth]} />
                 <meshStandardMaterial color="#6F7378" />
             </mesh>
@@ -156,14 +151,14 @@ export const DisplayWall = ({ artifact, args, position, width, height, depth }) 
                 transform
                 occlude="blending"
                 distanceFactor={0}
-                style={{ backgroundColor: "#63686e" }}
+                style={{ backgroundColor: "#6f747c" }}
             >
                 <img
-                    src={artifactRef?.current}
+                    src={artifactRef?.current || artifact}
                     alt="Art Display"
                     style={{
                         height: "22vh",
-                        border: "3px solid #2a2a2a",
+                        border: "2px solid #2a2a2a",
                     }}
                 />
             </Html>
@@ -240,11 +235,11 @@ export const FullSizeRoom = ({ roomDepth, roomWidth }) => {
             {/* Right Wall */}
 
             <Wall position={[-124, 2.5, 0]} width={2} height={5} depth={roomDepth} />
-            <Wall position={[-50.5, 2.5, 24]} horizontal width={2} height={5} depth={51} visible={false}/>
+            <Wall position={[-50.5, 2.5, 24]} horizontal width={2} height={5} depth={51} visible={false} />
             <Wall position={[-50.5, 2.5, -24]} horizontal width={2} height={5} depth={51} />
-            <Wall position={[-50.5, 2.5, -62]} horizontal width={2} height={5} depth={51} visible={false}/>
+            <Wall position={[-50.5, 2.5, -62]} horizontal width={2} height={5} depth={51} visible={false} />
             <Floor position={[-50, 0, -42.75]} width={roomWidth} depth={roomDepth / 3 - 2} />
-            
+
             {/* Hallway Back Wall */}
             <Wall position={[-50, 7.5, 62.5]} horizontal width={2} height={15} depth={50} />
             {/* Hallway Floor */}
@@ -254,7 +249,7 @@ export const FullSizeRoom = ({ roomDepth, roomWidth }) => {
             {/* 2nd Room Floor */}
             <Floor position={[-100, 0, 0]} width={roomWidth} depth={roomDepth} />
             {/* 2nd Room Front Wall */}
-            <Wall position={[-100, 2.5, -62]} horizontal width={2} height={5} depth={50} visible={false}/>
+            <Wall position={[-100, 2.5, -62]} horizontal width={2} height={5} depth={50} visible={false} />
             <MainFloor height={roomDepth} width={roomWidth} />
         </>
     );

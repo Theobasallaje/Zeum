@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 
-import { nip19, nip05, nip25, nip57, kinds } from "nostr-tools";
+import { nip19, kinds } from "nostr-tools";
 import nipplejs from "nipplejs";
-import { useNostr, useNostrEvents, useProfile } from "nostr-react";
+import { useNostrEvents } from "nostr-react";
 import { findImageUrlsInEvent, getEventHashTags, getEventText } from "../utils/Utils";
 
 export const useControls = () => {

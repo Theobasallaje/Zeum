@@ -10,6 +10,7 @@ import { BackdropLoader } from "./BackdropLoader";
 import { useZeumStore } from "./ZeumStore";
 import { ContextActions } from "./ContextActions";
 import { Box } from "@mui/material";
+import { ArtifactRoom } from "./ArtifactRoom";
 
 export const Scene = () => {
     const mainCameraRef = useRef(null);
@@ -17,7 +18,7 @@ export const Scene = () => {
     const [isLoading, setIsLoading] = useState(false);
     const { eventId } = useParams();
     const navigate = useNavigate();
-    const { setIsContextActionActive, getArtifactRoom, getRoomDepth, setArtifacts, artifacts } = useZeumStore();
+    const { setIsContextActionActive, getRoomDepth, setArtifacts, artifacts, showJoystick } = useZeumStore();
     const { events, isLoading: isLoadingNostrEvent } = useNostrEvents({
         filter: {
             ids: eventId ? [eventId] : undefined,
@@ -83,9 +84,9 @@ export const Scene = () => {
                         style={{ zIndex: 0 }}
                     >
                         <ambientLight intensity={2} position={[0, 10, 4]} />
-                        <Physics iterations={15}>
+                        <Physics iterations={1}>
                             <Dust />
-                            {getArtifactRoom()}
+                            <ArtifactRoom />
                             <PlayerControls startPosition={[0, 0, -(roomDepth / 2.5)]} mainCameraRef={mainCameraRef} />
                             <ExitPlane roomHeight={roomDepth} handleExit={handleExit} />
                         </Physics>
@@ -95,7 +96,7 @@ export const Scene = () => {
                         handleEndContextAction={handleEndContextAction}
                     />
                     <Box id="mobileInterface" className="noSelect">
-                        <Box id="joystickWrapper1"></Box>
+                       <div id="joystickWrapper1" style={{ display: showJoystick ? "block" : "none" }} />
                     </Box>
                 </>
             )}
