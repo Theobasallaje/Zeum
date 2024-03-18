@@ -167,14 +167,14 @@ export const DisplayWall = ({ artifact, position, width=10, height=8, depth=0.5 
 };
 
 export const Dust = () => {
-    const count = 1500;
+    const count = 800;
     const mesh = useRef();
 
     const particles = useMemo(() => {
         const temp = [];
         for (let i = 0; i < count; i++) {
             const time = Math.random() * 100;
-            const factor = Math.random() * 50 + 20;
+            const factor = Math.random() * 50;
             const speed = Math.random() * 0.0009;
             const x = Math.random() * 100 - 50;
             const y = Math.random() * 200 - 100;
@@ -214,7 +214,7 @@ export const Dust = () => {
     });
 
     return (
-        <instancedMesh ref={mesh} args={[null, null, count]} receiveShadow castShadow>
+        <instancedMesh ref={mesh} args={[null, null, count]} >
             <dodecahedronGeometry args={[0.025, 0]} />
             <meshPhongMaterial color="#ffffff" />
         </instancedMesh>
