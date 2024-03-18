@@ -116,7 +116,7 @@ export const DisplayWall = ({ artifact, position, width=10, height=8, depth=0.5 
         deactivateCloseUp();
     }, [deactivateCloseUp]);
 
-    const [wallRef] = useBox(() => ({ position, width, height, depth, type: "Static" }), useRef(null));
+    const [wallRef] = useBox(() => ({ position, width, height, depth, type: "Static", args: [width, height, depth], }), useRef(null));
 
     const [contextActionRangeRef] = useBox(
         () => ({
