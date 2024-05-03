@@ -1,73 +1,12 @@
-import { useState, useEffect, useMemo } from "react";
-
+import { useState, useEffect, useMemo, useRef } from "react";
 import { nip19, kinds } from "nostr-tools";
 import nipplejs from "nipplejs";
 import { useNostrEvents } from "nostr-react";
-import { findImageUrlsInEvent, getEventHashTags, getEventText } from "../utils/Utils";
+import { canDecode, findImageUrlsInEvent, getEventHashTags, getEventText } from "../utils/Utils";
+import { useZeumStore } from "./ZeumStore";
 
 export const useControls = () => {
-    const isTouchScreen = useIsTouchScreen();
-    function useJoystick({ setMovement }) {
-        let joyManager;
-
-        const joystickOptions = {
-            zone: document.getElementById("joystickWrapper1"),
-            size: 120,
-            multitouch: true,
-            maxNumberOfNipples: 2,
-            mode: "static",
-            restJoystick: true,
-            shape: "circle",
-            position: { top: "60px", left: "60px" },
-            dynamicPage: true,
-        };
-
-        useEffect(() => {
-            const handleMove = (evt, data) => {
-                const forward = data.vector.y;
-                const turn = data.vector.x;
-                const force = data.force;
-
-                if (forward > 0) {
-                    setMovement((m) => ({
-                        ...m,
-                        forward: 1,
-                        backward: 0,
-                        left: turn < -0.45,
-                        right: turn > 0.45,
-                        force,
-                    }));
-                } else if (forward < 0) {
-                    setMovement((m) => ({
-                        ...m,
-                        backward: 1,
-                        forward: 0,
-                        left: turn < -0.45,
-                        right: turn > 0.45,
-                        force,
-                    }));
-                }
-            };
-
-            const handleEnd = () => {
-                setMovement((m) => ({ ...m, forward: 0, backward: 0, left: 0, right: 0, force: 1 }));
-            };
-
-            if (!joyManager && isTouchScreen) {
-                // @ts-ignore
-                joyManager = nipplejs.create(joystickOptions);
-                joyManager["0"].on("move", handleMove);
-                joyManager["0"].on("end", handleEnd);
-            }
-
-            return () => {
-                if (joyManager) {
-                    joyManager["0"].off("move", handleMove);
-                    joyManager["0"].off("end", handleEnd);
-                }
-            };
-        }, [setMovement]);
-    }
+    const { isPlayerInRangeForContextAction, setIsContextActionActive, isContextActionActive } = useZeumStore();
 
     const [movement, setMovement] = useState({
         forward: false,
@@ -90,10 +29,13 @@ export const useControls = () => {
             ArrowLeft: "left",
             KeyD: "right",
             ArrowRight: "right",
-            Space: "jump",
         };
         const moveFieldByKey = (key) => keys[key];
         const handleKeyDown = (e) => {
+            if (e.code === "Enter" && (isPlayerInRangeForContextAction || isContextActionActive)) {
+                console.log({ isPlayerInRangeForContextAction, isContextActionActive });
+                setIsContextActionActive(!isContextActionActive);
+            }
             setMovement((m) => ({ ...m, [moveFieldByKey(e.code)]: true, force: 1 }));
         };
         const handleKeyUp = (e) => {
@@ -107,12 +49,12 @@ export const useControls = () => {
             document.removeEventListener("keydown", handleKeyDown);
             document.removeEventListener("keyup", handleKeyUp);
         };
-    }, []);
+    }, [isContextActionActive, isPlayerInRangeForContextAction, setIsContextActionActive]);
 
     return movement;
 };
 
-export const useNostrEventIdDecode = ({ eventIdInput }) => {
+export const useNostrEventIdDecode = (eventIdInput) => {
     const [decodedId, setDecodedId] = useState(null);
     const [isValid, setIsValid] = useState(true);
     const [validationError, setValidationError] = useState(null);
@@ -121,11 +63,16 @@ export const useNostrEventIdDecode = ({ eventIdInput }) => {
         if (eventIdInput) {
             setIsValid(true);
             setValidationError(null);
+
+            if (eventIdInput?.startsWith("nostr:")) {
+                eventIdInput = eventIdInput.slice(6);
+            }
+
             try {
-                const decodedEvent = nip19.decode(eventIdInput);
-                if (decodedEvent?.data) {
-                    // @ts-ignore
-                    setDecodedId(decodedEvent.data?.id ?? decodedEvent.data);
+                if (canDecode(eventIdInput)) {
+                    const decodedData = ((nip19.decode(eventIdInput) as nip19.DecodeResult).data as nip19.EventPointer);
+                    const decodedId = decodedData?.id;
+                    setDecodedId(decodedId ?? decodedData);
                 } else {
                     setIsValid(false);
                     setValidationError(new Error("Could not decode event ID"));
@@ -147,10 +94,7 @@ export const useIsTouchScreen = () => {
 };
 
 export const useReadEvent = (eventId) => {
-    const { decodedId, isValid, validationError } = useNostrEventIdDecode({
-        eventIdInput: eventId,
-    });
-
+    const { decodedId, isValid, validationError } = useNostrEventIdDecode(eventId);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [images, setImages] = useState([]);
     const [eventText, setEventText] = useState("");
@@ -196,7 +140,7 @@ export const useReadEvent = (eventId) => {
 };
 
 export const useNostrReactions = (eventId) => {
-    const {decodedId, isValid} = useNostrEventIdDecode({ eventIdInput: eventId });
+    const { decodedId, isValid } = useNostrEventIdDecode(eventId);
     const { events: reactions, isLoading: isLoadingReactions } = useNostrEvents({
         filter: {
             kinds: [kinds.Reaction],
@@ -217,6 +161,70 @@ export const useNostrProfile = (pubkey) => {
         enabled: !!pubkey,
     });
 
-    const profile = useMemo(() => events?.[0]?.content ? JSON.parse(events?.[0]?.content) : null, [events]);
+    const profile = useMemo(() => (events?.[0]?.content ? JSON.parse(events?.[0]?.content) : null), [events]);
     return { profile, isLoadingProfile };
 };
+
+function useJoystick({ setMovement }) {
+    const isTouchScreen = useIsTouchScreen();
+
+    let joyManager;
+
+    const joystickOptions = {
+        zone: document.getElementById("joystickWrapper1"),
+        size: 120,
+        multitouch: true,
+        maxNumberOfNipples: 2,
+        mode: "static",
+        restJoystick: true,
+        shape: "circle",
+        position: { top: "60px", left: "60px" },
+        dynamicPage: true,
+    };
+
+    useEffect(() => {
+        const handleMove = (evt, data) => {
+            const forward = data.vector.y;
+            const turn = data.vector.x;
+            const force = data.force;
+
+            if (forward > 0) {
+                setMovement((m) => ({
+                    ...m,
+                    forward: 1,
+                    backward: 0,
+                    left: turn < -0.45,
+                    right: turn > 0.45,
+                    force,
+                }));
+            } else if (forward < 0) {
+                setMovement((m) => ({
+                    ...m,
+                    backward: 1,
+                    forward: 0,
+                    left: turn < -0.45,
+                    right: turn > 0.45,
+                    force,
+                }));
+            }
+        };
+
+        const handleEnd = () => {
+            setMovement((m) => ({ ...m, forward: 0, backward: 0, left: 0, right: 0, force: 1 }));
+        };
+
+        if (!joyManager && isTouchScreen) {
+            // @ts-ignore
+            joyManager = nipplejs.create(joystickOptions);
+            joyManager["0"].on("move", handleMove);
+            joyManager["0"].on("end", handleEnd);
+        }
+
+        return () => {
+            if (joyManager) {
+                joyManager["0"].off("move", handleMove);
+                joyManager["0"].off("end", handleEnd);
+            }
+        };
+    }, [setMovement]);
+}

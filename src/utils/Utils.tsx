@@ -1,5 +1,20 @@
 import { nip19, nip57 } from "nostr-tools";
 
+export const canDecode = (identifier) => {
+    if (identifier.charAt(0) !== 'n') return false
+    return true
+  }
+  
+  export const isHex = (identifier) => {
+    const hexRegex = /^[0-9a-fA-F]{64}$/
+    return hexRegex.test(identifier)
+  }
+  
+  export const isUUIDv4 = (identifier) => {
+    const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/
+    return uuidRegex.test(identifier)
+  }
+
 export function findImageUrlsInEvent(event) {
     const regex = /(https?:\/\/[^\s]+?\.(jpg|png|gif|jpeg|webp|mp4)([^\s]*))/gi;
 

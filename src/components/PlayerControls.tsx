@@ -1,8 +1,7 @@
-// @ts-nocheck
 import { useBox } from "@react-three/cannon";
 import { useFrame } from "@react-three/fiber";
 import { Vector3 } from "three";
-import React from "react";
+import React, { useEffect } from "react";
 import { useControls, useIsTouchScreen } from "./Hooks";
 import { PerspectiveCamera } from "@react-three/drei";
 import { CAMERA_STARTING_POSITION, CAMERA_STARTING_ROTATION } from "./Constants";
@@ -11,7 +10,7 @@ import { useZeumStore } from "./ZeumStore";
 export const PlayerControls = ({ startPosition, mainCameraRef }) => {
     const isTouchScreen = useIsTouchScreen();
 
-    const { isContextActionActive, artifactPosition, setShowJoystick } =
+    const { isContextActionActive, artifactPosition, setShowJoystick, isPlayerInRangeForContextAction, setIsContextActionActive } =
         useZeumStore();
 
     const { forward, backward, left, right, force } = useControls();
@@ -60,12 +59,16 @@ export const PlayerControls = ({ startPosition, mainCameraRef }) => {
     });
 
     return (
-        <group ref={playerRef} api={playerApi} name="player-group">
+        <group 
+// @ts-ignore
+        ref={playerRef} api={playerApi} name="player-group">
             <PerspectiveCamera
                 ref={mainCameraRef}
                 makeDefault={!isContextActionActive}
                 isPerspectiveCamera
+                // @ts-ignore
                 position={CAMERA_STARTING_POSITION}
+                // @ts-ignore
                 rotation={CAMERA_STARTING_ROTATION}
                 fov={50}
             />

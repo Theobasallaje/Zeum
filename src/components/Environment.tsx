@@ -105,7 +105,7 @@ export const DisplayWall = ({ artifact, position, width=10, height=8, depth=0.5 
     const { setIsPlayerInRangeForContextAction, deactivateCloseUp, setArtifactPosition } = useZeumStore();
 
     const handlePlayerClose = useCallback(
-        (e) => {
+        () => {
             setIsPlayerInRangeForContextAction(true);
             setArtifactPosition([position[0], 1, position[2] - 8]);
         },
@@ -151,7 +151,7 @@ export const DisplayWall = ({ artifact, position, width=10, height=8, depth=0.5 
                 transform
                 occlude="blending"
                 distanceFactor={0}
-                style={{ backgroundColor: "#6f747c" }}
+                style={{ backgroundColor: "#6f747c", transform: "scaleX(-1)" }}
             >
                 <img
                     src={artifactRef?.current || artifact}

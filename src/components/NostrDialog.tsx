@@ -8,7 +8,7 @@ export const NostrDialog = ({ open, setOpen }) => {
     const navigate = useNavigate();
 
     const [eventIdInput, setEventIdInput] = useState("");
-    const { decodedId, isValid, validationError } = useNostrEventIdDecode({ eventIdInput });
+    const { decodedId, isValid, validationError } = useNostrEventIdDecode(eventIdInput);
 
     const handleEventIdChange = useCallback((e) => {
         const value = e.target.value.toLowerCase();

@@ -13,7 +13,7 @@ import { SevenArtifactRoom } from "./roomConfigs/SevenArtifactRoom";
 import { SixArtifactRoom } from "./roomConfigs/SixArtifactRoom";
 import { TenArtifactRoom } from "./roomConfigs/TenArtifactRoom";
 
-export const useZeumStore = create((set, get) => ({
+export const useZeumStore = create((set: (value) => void, get: () => any) => ({
     nostrExtension: window?.nostr,
     signedInAs: null,
     preferredRelays: [],
@@ -24,7 +24,7 @@ export const useZeumStore = create((set, get) => ({
     isPlayerInRangeForContextAction: false,
     setIsPlayerInRangeForContextAction: (isPlayerInRangeForContextAction) => set({ isPlayerInRangeForContextAction }),
     playerClosePosition: null,
-    setPlayerClosePosition: (playerClosePosition) => set({ playerClosePosition }),
+    setPlayerClosePosition: (playerClosePosition: any) => set({ playerClosePosition }),
     artifactPosition: null,
     setArtifactPosition: (artifactPosition) => set({ artifactPosition }),
     deactivateCloseUp: () =>

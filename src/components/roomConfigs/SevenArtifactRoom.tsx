@@ -36,8 +36,8 @@ export const SevenArtifactRoom = () => {
             <Wall position={[-50, 7.5, 38]} horizontal width={2} height={15} depth={50} />
 
             {/* Hallway Floor */}
-            <Floor position={[-50, 0, 27]} width={roomWidth} depth={roomDepth / 3 - 2}/>
-            
+            <Floor position={[-50, 0, 27]} width={roomWidth} depth={roomDepth / 3 - 2} />
+
             {/* 2nd Room Back Wall */}
             <Wall position={[-100, 7.5, 38]} horizontal width={2} height={15} depth={50} />
 
@@ -49,65 +49,16 @@ export const SevenArtifactRoom = () => {
 
             <MainFloor height={roomDepth} width={roomWidth} />
 
-            <DisplayWall
-                artifact={artifacts[6]}
-                args={[10.5, 10, 0.5]}
-                position={[-110, 4, 20]}
-                width={10}
-                height={8}
-                depth={0.5}
-            />
+            <DisplayWall artifact={artifacts[6]} position={[-110, 4, 20]} width={10} height={8} depth={0.5} />
 
-<DisplayWall
-                artifact={artifacts[5]}
-                args={[10.5, 10, 0.5]}
-                position={[-72, 4, 35]}
-                width={10}
-                height={8}
-                depth={0.5}
-            />
+            <DisplayWall artifact={artifacts[5]} position={[-72, 4, 35]} width={10} height={8} depth={0.5} />
 
-            <DisplayWall
-                artifact={artifacts[4]}
-                args={[10.5, 10, 0.5]}
-                position={[-51, 4, 35]}
-                width={10}
-                height={8}
-                depth={0.5}
-            />
+            <DisplayWall artifact={artifacts[4]} position={[-51, 4, 35]} width={10} height={8} depth={0.5} />
 
-            <DisplayWall
-                artifact={artifacts[3]}
-                args={[10.5, 10, 0.5]}
-                position={[-30, 4, 35]}
-                width={10}
-                height={8}
-                depth={0.5}
-            />
-            <DisplayWall
-                artifact={artifacts[2]}
-                args={[10.5, 10, 0.5]}
-                position={[0, 4, 20]}
-                width={10}
-                height={8}
-                depth={0.5}
-            />
-            <DisplayWall
-                artifact={artifacts[1]}
-                args={[10.5, 10, 0.5]}
-                position={[-12, 4, 0]}
-                width={10}
-                height={8}
-                depth={0.5}
-            />
-            <DisplayWall
-                artifact={artifacts[0]}
-                args={[10.5, 10, 0.5]}
-                position={[8, 4, -20]}
-                width={10}
-                height={8}
-                depth={0.5}
-            />
+            <DisplayWall artifact={artifacts[3]} position={[-30, 4, 35]} width={10} height={8} depth={0.5} />
+            <DisplayWall artifact={artifacts[2]} position={[0, 4, 20]} width={10} height={8} depth={0.5} />
+            <DisplayWall artifact={artifacts[1]} position={[-12, 4, 0]} width={10} height={8} depth={0.5} />
+            <DisplayWall artifact={artifacts[0]} position={[8, 4, -20]} width={10} height={8} depth={0.5} />
         </>
     );
 };
