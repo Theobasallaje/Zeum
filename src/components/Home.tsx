@@ -25,7 +25,7 @@ import {
     CircularProgress,
 } from "@mui/material";
 import React, { useState, useCallback } from "react";
-import { ArrowForward, ContentCopy, FavoriteBorder, Close } from "@mui/icons-material";
+import { ArrowForward, ContentCopy, FavoriteBorder, Close, BorderBottom } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useReadEvent, useNostrEventIdDecode, useNostrReactions, useNostrProfile } from "./Hooks";
 import { fetchInvoice, isNullOrEmpty, satToMsat } from "../utils/Utils";
@@ -156,9 +156,9 @@ const ZeumCard = ({ eventId }) => {
     if (!images?.length) return null;
 
     return (
-        <Card sx={{ boxShadow: "3px 3px black" }}>
+        <Card sx={{ boxShadow: "6px 6px rgb(45, 45, 45)" }}>
             {isLoading && <LinearProgress />}
-            <CardMedia component="img" height="192" image={images[0]} />
+            <CardMedia component="img" height="192" sx={{borderBottom: "3px solid black"}} image={images[0]} />
             <CardContent sx={{ paddingBottom: "10px !important" }}>
                 <Grid container justifyContent="space-between" spacing={1}>
                     <Grid item xs={12}>
