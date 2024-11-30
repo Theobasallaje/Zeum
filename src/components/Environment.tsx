@@ -254,3 +254,43 @@ export const FullSizeRoom = ({ roomDepth, roomWidth }) => {
         </>
     );
 };
+
+// Example of adding cinematic lighting
+export const CinematicLighting = () => {
+    return (
+        <>
+            {/* Key Light */}
+            <spotLight
+                position={[10, 10, 10]}
+                angle={0.3}
+                penumbra={1}
+                intensity={1.5}
+                castShadow
+            />
+            {/* Fill Light */}
+            <spotLight
+                position={[-10, 10, 10]}
+                angle={0.3}
+                penumbra={1}
+                intensity={0.5}
+                castShadow
+            />
+            {/* Back Light */}
+            <spotLight
+                position={[0, 20, -10]}
+                angle={0.5}
+                penumbra={1}
+                intensity={1}
+                castShadow
+            />
+            {/* Additional Effects */}
+            <directionalLight
+                position={[0, 50, 0]}
+                intensity={0.8}
+                color="0x404040"
+            />
+            <ambientLight intensity={0.3} />
+        </>
+    );
+};
+

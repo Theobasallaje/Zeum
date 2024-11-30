@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState, useRef, useMemo } from "react"
 import { useNavigate, useParams } from "react-router-dom";
 import { Canvas } from "@react-three/fiber";
 import { Physics } from "@react-three/cannon";
-import { ExitPlane, Dust } from "./Environment";
+import { ExitPlane, Dust, CinematicLighting } from "./Environment";
 import { PlayerControls } from "./PlayerControls";
 import { findImageUrlsInEvent } from "../utils/Utils";
 import { useNostrEvents } from "nostr-react";
@@ -93,11 +93,12 @@ export const Scene = () => {
                         camera={{ far: 100, near: 1, position: [0, 10, -10], zoom: 50, fov: 50 }}
                         orthographic
                         shadows
-                        style={{ zIndex: 0 }}
+                        style={{ zIndex: 0, background: 'linear-gradient(to bottom, #333, #777)' }}
                     >
                         <ambientLight intensity={2} position={[0, 10, 4]} />
                         <Physics iterations={1}>
                             <Dust />
+                            <CinematicLighting />
                             <ArtifactRoom />
                             <PlayerControls startPosition={[0, 0, -(roomDepth / 2.5)]} mainCameraRef={mainCameraRef} />
                             <ExitPlane roomHeight={roomDepth} handleExit={handleExit} />
