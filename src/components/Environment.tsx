@@ -14,7 +14,7 @@ export const Floor = ({ depth, width, position, debug = false }) => {
     return (
         <mesh ref={ref} position={position} receiveShadow castShadow type="fixed">
             <planeGeometry args={[width, depth]} />
-            <meshStandardMaterial color={debug ? "red" : "gray"} />
+            <meshStandardMaterial color={debug ? "red" : "#333"} />
         </mesh>
     );
 };
@@ -31,19 +31,19 @@ export const MainFloor = ({ height, width }) => {
                 <GradientTexture
                     stops={[0, 0.1, 0.2, 0.22, 0.26, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]}
                     colors={[
-                        "white",
-                        "gray",
-                        "gray",
-                        "gray",
-                        "gray",
-                        "gray",
-                        "gray",
-                        "gray",
-                        "gray",
-                        "gray",
-                        "gray",
-                        "gray",
-                        "gray",
+                        "#444",
+                        "#444",
+                        "#333",
+                        "#333",
+                        "#333",
+                        "#333",
+                        "#333",
+                        "#333",
+                        "#333",
+                        "#333",
+                        "#333",
+                        "#333",
+                        "#333",
                     ]}
                 />
             </meshStandardMaterial>
@@ -82,7 +82,7 @@ export const Wall = ({ position, horizontal = false, height, width, depth, visib
     return (
         <mesh ref={wallRef}  receiveShadow castShadow>
             <boxGeometry args={[width, height, depth]} />
-            <meshStandardMaterial color="#787878" visible={visible ?? true} />
+            <meshStandardMaterial color="#333" visible={visible ?? true} />
         </mesh>
     );
 };
@@ -134,9 +134,9 @@ export const DisplayWall = ({ artifact, position, width=10, height=8, depth=0.5 
     return (
         <group>
             <pointLight
-                position={[position[0], position[1], position[2] - 5]}
-                color="white"
-                intensity={15} 
+                position={[position[0], position[1], position[2] - 1]}
+                color="#FFE1AA"
+                intensity={54} 
                 castShadow
                 shadow-mapSize-width={512} 
                 shadow-mapSize-height={512}
@@ -144,14 +144,14 @@ export const DisplayWall = ({ artifact, position, width=10, height=8, depth=0.5 
             <mesh ref={contextActionRangeRef}></mesh>
             <mesh ref={wallRef} >
                 <boxGeometry args={[width, height, depth]} />
-                <meshStandardMaterial color="#6F7378" />
+                <meshStandardMaterial color="#4f483a" />
             </mesh>
             <Html
                 position={[position[0], position[1], position[2] - 0.3]}
                 transform
                 occlude="blending"
                 distanceFactor={0}
-                style={{ backgroundColor: "#6f747c", transform: "scaleX(-1)" }}
+                style={{ backgroundColor: "#7a6b4e", transform: "scaleX(-1)" }}
             >
                 <img
                     src={artifactRef?.current || artifact}
@@ -259,7 +259,7 @@ export const FullSizeRoom = ({ roomDepth, roomWidth }) => {
 export const CinematicLighting = () => {
     return (
         <>
-            {/* Key Light */}
+            Key Light
             <spotLight
                 position={[10, 10, 10]}
                 angle={0.3}

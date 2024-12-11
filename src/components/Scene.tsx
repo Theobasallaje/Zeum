@@ -93,7 +93,7 @@ export const Scene = () => {
                         camera={{ far: 100, near: 1, position: [0, 10, -10], zoom: 50, fov: 50 }}
                         orthographic
                         shadows
-                        style={{ zIndex: 0, background: 'linear-gradient(to bottom, #333, #777)' }}
+                        style={{ zIndex: 0, background: 'linear-gradient(to bottom, #000000, #333)' }}
                     >
                         <ambientLight intensity={2} position={[0, 10, 4]} />
                         <Physics iterations={1}>
